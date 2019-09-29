@@ -1,0 +1,38 @@
+require "minitest/autorun"
+
+require "./token"
+require "./lexer"
+
+class TestLexer < Minitest::Test
+  def test_next_token
+    input = <<~EOS
+      let myfunc =fn(x, y){
+        return x+ y;
+      }
+    EOS
+    le = Lexer.new(input)
+    tests = [
+      [Token::LET, "let"],
+      [Token::IDENT, "myfunc"],
+      [Token::ASSIGN, "="],
+      [Token::FUNCTION, "fn"],
+      [Token::LPAR, "("],
+      [Token::IDENT, "x"],
+      [Token::COMMA, ","],
+      [Token::IDENT, "y"],
+      [Token::RPAR, ")"],
+      [Token::LBRACE, "{"],
+      [Token::IDENT, "return"],
+      [Token::IDENT, "x"],
+      [Token::PLUS, "+"],
+      [Token::IDENT, "y"],
+      [Token::SEMICOLON, ";"],
+      [Token::RBRACE, "}"],
+    ]
+    tests.each do |t, l|
+      type, literal = le.next_token
+      assert_equal(t, type)
+      assert_equal(l, literal)
+    end
+  end
+end
