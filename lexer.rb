@@ -42,20 +42,20 @@ class Lexer
 
   def next_token
     self.skip_whitespace
-    t = []
+    t = nil
     case @char
-    when "+"; t = [Token::PLUS, "+"]
-    when "="; t = [Token::ASSIGN, "="]
-    when ","; t = [Token::COMMA, ","]
-    when ";"; t = [Token::SEMICOLON, ";"]
-    when "("; t = [Token::LPAR, "("]
-    when ")"; t = [Token::RPAR, ")"]
-    when "{"; t = [Token::LBRACE, "{"]
-    when "}"; t = [Token::RBRACE, "}"]
+    when "+"; t = Token.new(TokenType::PLUS, "+")
+    when "="; t = Token.new(TokenType::ASSIGN, "=")
+    when ","; t = Token.new(TokenType::COMMA, ",")
+    when ";"; t = Token.new(TokenType::SEMICOLON, ";")
+    when "("; t = Token.new(TokenType::LPAR, "(")
+    when ")"; t = Token.new(TokenType::RPAR, ")")
+    when "{"; t = Token.new(TokenType::LBRACE, "{")
+    when "}"; t = Token.new(TokenType::RBRACE, "}")
     when lambda { |c| c.alpha? }
       ident = self.read_identifer
-      return [Token::lookup_identifer(ident), ident]
-    else t = [Token::ILLEGAL, "ILLEGAL"]
+      return Token.new(TokenType::lookup_identifer(ident), ident)
+    else t = Token.new(TokenType::ILLEGAL, "ILLEGAL")
     end
     self.read_char
     return t

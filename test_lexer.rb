@@ -8,7 +8,7 @@ class TestLexer < Minitest::Test
     input = <<~EOS
       let myfunc =fn(x, y){
         return x+ y;
-      }
+      };
     EOS
     le = Lexer.new(input)
     tests = [
@@ -28,11 +28,12 @@ class TestLexer < Minitest::Test
       [Token::IDENT, "y"],
       [Token::SEMICOLON, ";"],
       [Token::RBRACE, "}"],
+      [Token::SEMICOLON, ";"],
     ]
     tests.each do |t, l|
-      type, literal = le.next_token
-      assert_equal(t, type)
-      assert_equal(l, literal)
+      token = le.next_token
+      assert_equal(t, token.type)
+      assert_equal(l, token.literal)
     end
   end
 end

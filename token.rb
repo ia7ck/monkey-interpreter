@@ -1,4 +1,4 @@
-module Token
+module TokenType
   ILLEGAL = "ILLEGAL" # 未知のトークン
 
   IDENT = "IDENT" # 識別子 myfunc, x, y, ...
@@ -20,7 +20,7 @@ module Token
   FUNCTION = "FUNCTION" # fn
   LET = "LET" # let
 
-  @keywords = { fn: Token::FUNCTION, let: Token::LET }
+  @keywords = { fn: TokenType::FUNCTION, let: TokenType::LET }
 
   # ident が予約語なら対応する token type (FUNCTION, LET, ...) を返す
   # そうでなければ IDENT を返す
@@ -29,4 +29,14 @@ module Token
   end
 
   module_function (:lookup_identifer)
+end
+
+class Token
+  include TokenType
+
+  attr_accessor :type, :literal
+  def initialize(type, literal)
+    @type = type
+    @literal = literal
+  end
 end
