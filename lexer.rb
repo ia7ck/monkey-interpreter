@@ -1,5 +1,29 @@
 require "./token"
 
+class String
+  def alpha?
+    raise if self.size != 1
+    o = self.ord
+    return (("a".ord <= o and o <= "z".ord) or ("A".ord <= o and o <= "Z".ord))
+  end
+
+  def digit?
+    raise if self.size != 1
+    o = self.ord
+    return ("0".ord <= o and o <= "9".ord)
+  end
+
+  def letter?
+    raise if self.size != 1
+    return (self.alpha? or self.digit? or self == "_")
+  end
+
+  def whitespace?
+    raise if self.size != 1
+    return [" ", "\t", "\n", "\r"].include?(self)
+  end
+end
+
 class Lexer
   def initialize(input)
     @input = input.strip
@@ -28,7 +52,7 @@ class Lexer
     when ")"; t = [Token::RPAR, ")"]
     when "{"; t = [Token::LBRACE, "{"]
     when "}"; t = [Token::RBRACE, "}"]
-    when /^[a-zA-Z_]$/
+    when lambda { |c| c.alpha? }
       ident = self.read_identifer
       return [Token::lookup_identifer(ident), ident]
     else t = [Token::ILLEGAL, "ILLEGAL"]
@@ -38,14 +62,14 @@ class Lexer
   end
 
   def skip_whitespace
-    while @char =~ /^\s$/
+    while @char.whitespace?
       self.read_char
     end
   end
 
   def read_identifer
     left = @pos
-    while @char =~ /^\w$/
+    while @char.letter?
       self.read_char
     end
     return @input[left...@pos] # [left, @pos)
