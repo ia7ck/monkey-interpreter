@@ -56,6 +56,10 @@ class Identifier < Expression
     @token = token
     @value = value
   end
+
+  def token_literal
+    @token.literal
+  end
 end
 
 class IntegerLiteral < Expression
@@ -64,5 +68,9 @@ class IntegerLiteral < Expression
   def initialize(token, value)
     @token = token
     @value = value
+  end
+
+  def token_literal
+    @token.literal
   end
 end

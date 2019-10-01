@@ -27,7 +27,7 @@ class TestParser < Minitest::Test
 
   def _test_let_statement(stmt, name)
     assert_equal("let", stmt.token_literal)
-    assert_equal(name, stmt.name.literal)
+    assert_equal(name, stmt.name.token_literal)
   end
 
   def test_identifier_expression
@@ -39,7 +39,7 @@ class TestParser < Minitest::Test
     stmt = program.statements[0]
     assert(stmt.instance_of?(ExpressionStatement))
     assert(stmt.token)
-    assert_equal(stmt.token.literal, "foobar")
+    assert_equal(stmt.token_literal, "foobar")
     assert(stmt.expression.instance_of?(Identifier))
     assert_equal(stmt.expression.value, "foobar")
   end
@@ -53,7 +53,7 @@ class TestParser < Minitest::Test
     stmt = program.statements[0]
     assert(stmt.instance_of?(ExpressionStatement))
     assert(stmt.token)
-    assert_equal(stmt.token.literal, "123")
+    assert_equal(stmt.token_literal, "123")
     assert(stmt.expression.instance_of?(IntegerLiteral))
     assert_equal(stmt.expression.value, 123)
   end

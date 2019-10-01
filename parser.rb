@@ -33,6 +33,10 @@ class Parser
     @nxt_token = @le.read_token
   end
 
+  def current_token_type_is(token_type)
+    @cur_token.type == token_type
+  end
+
   def expect_current_token_type_is(token_type)
     if @cur_token.type != token_type
       raise "got: #{@cur_token.type}, want: #{token_type}"
@@ -68,10 +72,10 @@ class Parser
   def parse_let_statement
     let_stmt = LetStatement.new
     self.expect_next_token_type_is(TokenType::IDENT)
-    let_stmt.name = @cur_token
+    let_stmt.name = Identifier.new(@cur_token, @cur_token.literal)
     self.expect_next_token_type_is(TokenType::ASSIGN)
     self.advance_cursor
-    while @cur_token.type != TokenType::SEMICOLON
+    until self.current_token_type_is(TokenType::SEMICOLON)
       self.advance_cursor
     end
     return let_stmt
