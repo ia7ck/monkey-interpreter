@@ -26,11 +26,11 @@ module TokenType
 
   # ident が予約語なら対応する token type (FUNCTION, LET, ...) を返す
   # そうでなければ IDENT を返す
-  def lookup_identifer(ident)
+  def lookup_identifier(ident)
     @keywords.fetch(ident.intern, Token::IDENT)
   end
 
-  module_function (:lookup_identifer)
+  module_function (:lookup_identifier)
 end
 
 class Token

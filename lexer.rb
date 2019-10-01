@@ -53,8 +53,8 @@ class Lexer
     when "{"; t = Token.new(TokenType::LBRACE, "{")
     when "}"; t = Token.new(TokenType::RBRACE, "}")
     when lambda { |c| c.alpha? }
-      ident = self.read_identifer
-      return Token.new(TokenType::lookup_identifer(ident), ident)
+      ident = self.read_identifier
+      return Token.new(TokenType::lookup_identifier(ident), ident)
     when "$"; t = Token.new(TokenType::EOF, "$")
     else t = Token.new(TokenType::ILLEGAL, "ILLEGAL")
     end
@@ -68,7 +68,7 @@ class Lexer
     end
   end
 
-  def read_identifer
+  def read_identifier
     left = @pos
     while @char.letter?
       self.read_char
