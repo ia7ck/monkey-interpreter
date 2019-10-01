@@ -35,3 +35,25 @@ class LetStatement < Statement
     @token.literal
   end
 end
+
+class ExpressionStatement < Statement
+  attr_accessor :token, :expression
+
+  def initialize(token)
+    @token = token # 式の最初に現れる token
+    @expression = nil
+  end
+
+  def token_literal
+    @token.literal
+  end
+end
+
+class Identifier < Expression
+  attr_accessor :token, :value
+
+  def initialize(token, value)
+    @token = token
+    @value = value
+  end
+end

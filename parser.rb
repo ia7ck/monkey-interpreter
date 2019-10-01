@@ -2,6 +2,16 @@ require "./token"
 require "./lexer"
 require "./ast"
 
+module Precedence
+  LOWEST = 1
+  EQUALS = 123
+  LESSGREATER = 1234
+  SUM = 12345
+  PRODUCT = 123456 # *, /
+  PREFIX = 1234567 # -XXX, !XXX
+  CALL = 123456789
+end
+
 class Parser
   def initialize(input)
     @le = Lexer.new(input)
@@ -9,6 +19,9 @@ class Parser
     @nxt_token = nil
     self.advance_cursor
     self.advance_cursor
+    @prefix_parse_functions = [TokenType::IDENT].zip(
+      [-> { Identifier.new(@cur_token, @cur_token.literal) }]
+    ).to_h
   end
 
   def advance_cursor
@@ -29,6 +42,25 @@ class Parser
     self.advance_cursor
   end
 
+  def parse_program
+    program = Program.new
+    while @cur_token.type != TokenType::EOF
+      stmt = self.parse_statement
+      if stmt
+        program.statements.push(stmt)
+      end
+      self.advance_cursor
+    end
+    return program
+  end
+
+  def parse_statement
+    case @cur_token.type
+    when TokenType::LET; self.parse_let_statement
+    else self.parse_expression_statement
+    end
+  end
+
   def parse_let_statement
     let_stmt = LetStatement.new
     self.expect_next_token_type_is(TokenType::IDENT)
@@ -41,22 +73,21 @@ class Parser
     return let_stmt
   end
 
-  def parse_statement
-    case @cur_token.type
-    when TokenType::LET; self.parse_let_statement
-    else nil
-    end
-  end
-
-  def parse_program
-    program = Program.new
-    while @cur_token.type != TokenType::EOF
-      stmt = self.parse_statement
-      if stmt
-        program.statements.push(stmt)
-      end
+  def parse_expression_statement
+    stmt = ExpressionStatement.new(@cur_token)
+    stmt.expression = self.parse_expression(Precedence::LOWEST)
+    if @nxt_token.type == TokenType::SEMICOLON
       self.advance_cursor
     end
-    return program
+    return stmt
+  end
+
+  def parse_expression(precedence)
+    prefix = @prefix_parse_functions[@cur_token.type]
+    if prefix.nil?
+      return nil
+    end
+    left_expression = prefix.call
+    return left_expression
   end
 end

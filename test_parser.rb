@@ -9,7 +9,7 @@ class TestParser < Minitest::Test
   def test_parse_program
     input = <<~EOS
       let myfunc =fn(x, y){
-        return x+ y;
+        
       };
       let a = -123;
       let p = q + -r;
@@ -17,7 +17,7 @@ class TestParser < Minitest::Test
     pa = Parser.new(input)
     program = pa.parse_program
     assert(program)
-    assert_equal(program.statements.size, 3)
+    assert_equal(3, program.statements.size)
     tests = ["myfunc", "a", "p"]
     tests.each_with_index do |name, i|
       stmt = program.statements[i]
@@ -26,7 +26,20 @@ class TestParser < Minitest::Test
   end
 
   def _test_let_statement(stmt, name)
-    assert_equal(stmt.token_literal, "let")
-    assert_equal(stmt.name.literal, name)
+    assert_equal("let", stmt.token_literal)
+    assert_equal(name, stmt.name.literal)
+  end
+
+  def test_identifier_expression
+    input = "foobar;"
+    pa = Parser.new(input)
+    program = pa.parse_program
+    assert(program)
+    assert_equal(1, program.statements.size)
+    stmt = program.statements[0]
+    assert(stmt.instance_of?(ExpressionStatement))
+    assert_equal(stmt.token.literal, "foobar")
+    assert(stmt.expression.instance_of?(Identifier))
+    assert_equal(stmt.expression.value, "foobar")
   end
 end
