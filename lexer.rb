@@ -40,6 +40,10 @@ class Lexer
     return @char
   end
 
+  def next_char
+    @nxt_pos >= @input.size ? "$" : @input[@nxt_pos]
+  end
+
   def read_token
     self.skip_whitespace
     t = nil
@@ -47,8 +51,23 @@ class Lexer
     when "+"; t = Token.new(TokenType::PLUS, "+")
     when "-"; t = Token.new(TokenType::MINUS, "-")
     when "*"; t = Token.new(TokenType::ASTERISK, "*")
-    when "="; t = Token.new(TokenType::ASSIGN, "=")
-    when "!"; t = Token.new(TokenType::BANG, "!")
+    when "/"; t = Token.new(TokenType::SLASH, "/")
+    when "="
+      if self.next_char == "="
+        self.read_char
+        t = Token.new(TokenType::EQUAL, "==")
+      else
+        t = Token.new(TokenType::ASSIGN, "=")
+      end
+    when "!"
+      if self.next_char == "="
+        self.read_char
+        t = Token.new(TokenType::NOT_EQUAL, "!=")
+      else
+        t = Token.new(TokenType::BANG, "!")
+      end
+    when "<"; t = Token.new(TokenType::LT, "<")
+    when ">"; t = Token.new(TokenType::GT, ">")
     when ","; t = Token.new(TokenType::COMMA, ",")
     when ";"; t = Token.new(TokenType::SEMICOLON, ";")
     when "("; t = Token.new(TokenType::LPAR, "(")

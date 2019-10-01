@@ -31,6 +31,37 @@ class Parser
       :parse_prefix_expression,
       :parse_prefix_expression,
     ].map { |name| self.method(name) }).to_h
+    @infix_parse_functions = [
+      TokenType::EQUAL,
+      TokenType::NOT_EQUAL,
+      TokenType::LT,
+      TokenType::GT,
+      TokenType::PLUS,
+      TokenType::MINUS,
+      TokenType::ASTERISK,
+      TokenType::SLASH,
+    ].product([
+      :parse_infix_expression,
+    ].map { |name| self.method(name) }).to_h
+    @precedences = [
+      TokenType::EQUAL,
+      TokenType::NOT_EQUAL,
+      TokenType::LT,
+      TokenType::GT,
+      TokenType::PLUS,
+      TokenType::MINUS,
+      TokenType::ASTERISK,
+      TokenType::SLASH,
+    ].zip([
+      Precedence::EQUALS,
+      Precedence::EQUALS,
+      Precedence::LESSGREATER,
+      Precedence::LESSGREATER,
+      Precedence::SUM,
+      Precedence::SUM,
+      Precedence::PRODUCT,
+      Precedence::PRODUCT,
+    ]).to_h
   end
 
   def advance_cursor
@@ -59,6 +90,14 @@ class Parser
     self.advance_cursor
   end
 
+  def current_token_precedence
+    @precedences[@cur_token.type] or Precedence::LOWEST
+  end
+
+  def next_token_precedence
+    @precedences[@nxt_token.type] or Precedence::LOWEST
+  end
+
   def parse_program
     program = Program.new
     while @cur_token.type != TokenType::EOF
@@ -84,7 +123,8 @@ class Parser
     let_stmt.name = Identifier.new(@cur_token, @cur_token.literal)
     self.expect_next_token_type_is(TokenType::ASSIGN)
     self.advance_cursor
-    until self.current_token_type_is(TokenType::SEMICOLON)
+    let_stmt.value = self.parse_expression(Precedence::LOWEST)
+    if self.next_token_type_is(TokenType::SEMICOLON)
       self.advance_cursor
     end
     return let_stmt
@@ -103,6 +143,15 @@ class Parser
     prefix = @prefix_parse_functions[@cur_token.type]
     raise "not found prefix parse function for #{@cur_token.type}" if prefix.nil?
     left_expression = prefix.call
+    while (not self.next_token_type_is(TokenType::SEMICOLON)) and
+          precedence < self.next_token_precedence
+      infix = @infix_parse_functions[@nxt_token.type]
+      if infix.nil?
+        return left_expression
+      end
+      self.advance_cursor
+      left_expression = infix.call(left_expression)
+    end
     return left_expression
   end
 
@@ -118,6 +167,14 @@ class Parser
     expression = PrefixExpression.new(@cur_token, @cur_token.literal)
     self.advance_cursor
     expression.right_expression = self.parse_expression(Precedence::PREFIX)
+    return expression
+  end
+
+  def parse_infix_expression(left_expression)
+    expression = InfixExpression.new(@cur_token, left_expression, @cur_token.literal)
+    precedence = self.current_token_precedence
+    self.advance_cursor
+    expression.right_expression = self.parse_expression(precedence)
     return expression
   end
 end

@@ -8,17 +8,14 @@ require "./parser"
 class TestParser < Minitest::Test
   def test_parse_program
     input = <<~EOS
-      let myfunc =fn(x, y){
-        
-      };
       let a = -123;
       let p = q + -r;
     EOS
     pa = Parser.new(input)
     program = pa.parse_program
     assert(program)
-    assert_equal(3, program.statements.size)
-    tests = ["myfunc", "a", "p"]
+    assert_equal(2, program.statements.size)
+    tests = ["a", "p"]
     tests.each_with_index do |name, i|
       stmt = program.statements[i]
       self._test_let_statement(stmt, name)
@@ -66,8 +63,8 @@ class TestParser < Minitest::Test
     prefix_test = Struct.new(:input, :operator, :integer_value)
     tests = [
       ["!777", "!", 777],
-      ["-88", "-", 88],
-    ].map { |i, o, iv| prefix_test.new(i, o, iv) }
+      ["-88;", "-", 88],
+    ].map { |args| prefix_test.new(*args) }
     tests.each do |t|
       pa = Parser.new(t.input)
       program = pa.parse_program
@@ -78,6 +75,42 @@ class TestParser < Minitest::Test
       assert(exp)
       assert_equal(t.operator, exp.operator)
       self._test_integer_literal(exp.right_expression, t.integer_value)
+    end
+  end
+
+  def test_parse_infix_expressions
+    infix_test = Struct.new(:input, :left_value, :operator, :right_value)
+    tests = [
+      ["1 + 23;", 1, "+", 23],
+      ["1 != 23;", 1, "!=", 23],
+      ["1 < 23;", 1, "<", 23],
+    ].map { |args| infix_test.new(*args) }
+    tests.each do |t|
+      pa = Parser.new(t.input)
+      program = pa.parse_program
+      assert_equal(1, program.statements.size)
+      stmt = program.statements[0]
+      assert_equal(ExpressionStatement, stmt.class)
+      exp = stmt.expression
+      assert(exp)
+      self._test_integer_literal(exp.left_expression, t.left_value)
+      assert_equal(t.operator, exp.operator)
+      self._test_integer_literal(exp.right_expression, t.right_value)
+    end
+  end
+
+  def test_operator_precedence
+    tests = [
+      ["1 + 2 + x;", "((1 + 2) + x)"],
+      ["-a*b", "((-a) * b)"],
+      ["!-a", "(!(-a))"],
+      ["1 < 2 == 3 > 4", "((1 < 2) == (3 > 4))"],
+      ["let p = q + -r;", "let p = (q + (-r))"],
+    ]
+    tests.each do |input, output|
+      pa = Parser.new(input)
+      program = pa.parse_program
+      assert_equal(output, program.to_str)
     end
   end
 end

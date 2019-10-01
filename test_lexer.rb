@@ -8,6 +8,8 @@ class TestLexer < Minitest::Test
     input = <<~EOS
       let v = 2 * (3 + 4);
       a + -23;
+      1 != 2;
+      2 < 3;
     EOS
     le = Lexer.new(input)
     tests = [
@@ -26,6 +28,14 @@ class TestLexer < Minitest::Test
       [Token::PLUS, "+"],
       [Token::MINUS, "-"],
       [Token::INT, "23"],
+      [Token::SEMICOLON, ";"],
+      [Token::INT, "1"],
+      [Token::NOT_EQUAL, "!="],
+      [Token::INT, "2"],
+      [Token::SEMICOLON, ";"],
+      [Token::INT, "2"],
+      [Token::LT, "<"],
+      [Token::INT, "3"],
       [Token::SEMICOLON, ";"],
       [Token::EOF, "$"],
     ]

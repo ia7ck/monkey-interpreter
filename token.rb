@@ -4,11 +4,16 @@ module TokenType
   IDENT = "IDENT" # 識別子 myfunc, x, y, ...
   INT = "INT" # 123, ...
 
-  ASSIGN = "="
   PLUS = "+"
   MINUS = "-"
   ASTERISK = "*"
+  SLASH = "/"
+  ASSIGN = "="
+  EQUAL = "=="
   BANG = "!"
+  NOT_EQUAL = "!="
+  LT = "<"
+  GT = ">"
 
   COMMA = ","
   SEMICOLON = ";"

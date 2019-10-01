@@ -4,6 +4,10 @@ module Node
   def token_literal
     raise NotImplementedError
   end
+
+  def to_str
+    raise NotImplementedError
+  end
 end
 
 class Statement
@@ -20,6 +24,10 @@ class Program
   def initialize
     @statements = []
   end
+
+  def to_str
+    @statements.join
+  end
 end
 
 class LetStatement < Statement
@@ -34,6 +42,10 @@ class LetStatement < Statement
   def token_literal
     @token.literal
   end
+
+  def to_str
+    "let #{@name.to_str} = #{@value.to_str}"
+  end
 end
 
 class ExpressionStatement < Statement
@@ -47,6 +59,10 @@ class ExpressionStatement < Statement
   def token_literal
     @token.literal
   end
+
+  def to_str
+    @expression.nil? ? "" : @expression.to_str
+  end
 end
 
 class Identifier < Expression
@@ -58,6 +74,10 @@ class Identifier < Expression
   end
 
   def token_literal
+    @token.literal
+  end
+
+  def to_str
     @token.literal
   end
 end
@@ -73,6 +93,10 @@ class IntegerLiteral < Expression
   def token_literal
     @token.literal
   end
+
+  def to_str
+    @token.literal
+  end
 end
 
 class PrefixExpression < Expression
@@ -86,5 +110,24 @@ class PrefixExpression < Expression
 
   def token_literal
     @token.literal
+  end
+
+  def to_str
+    "(#{@operator}#{@right_expression.to_str})"
+  end
+end
+
+class InfixExpression < Expression
+  attr_accessor :left_expression, :operator, :right_expression
+
+  def initialize(token, left_expression, operator)
+    @token = token
+    @left_expression = left_expression
+    @operator = operator
+    @right_expression = nil
+  end
+
+  def to_str
+    "(#{@left_expression.to_str} #{@operator} #{@right_expression.to_str})"
   end
 end
