@@ -6,28 +6,26 @@ require "./lexer"
 class TestLexer < Minitest::Test
   def test_read_token
     input = <<~EOS
-      let myfunc =fn(x, y){
-        return x+ y;
-      };
+      let v = 2 * (3 + 4);
+      a + -23;
     EOS
     le = Lexer.new(input)
     tests = [
       [Token::LET, "let"],
-      [Token::IDENT, "myfunc"],
+      [Token::IDENT, "v"],
       [Token::ASSIGN, "="],
-      [Token::FUNCTION, "fn"],
+      [Token::INT, "2"],
+      [Token::ASTERISK, "*"],
       [Token::LPAR, "("],
-      [Token::IDENT, "x"],
-      [Token::COMMA, ","],
-      [Token::IDENT, "y"],
-      [Token::RPAR, ")"],
-      [Token::LBRACE, "{"],
-      [Token::IDENT, "return"],
-      [Token::IDENT, "x"],
+      [Token::INT, "3"],
       [Token::PLUS, "+"],
-      [Token::IDENT, "y"],
+      [Token::INT, "4"],
+      [Token::RPAR, ")"],
       [Token::SEMICOLON, ";"],
-      [Token::RBRACE, "}"],
+      [Token::IDENT, "a"],
+      [Token::PLUS, "+"],
+      [Token::MINUS, "-"],
+      [Token::INT, "23"],
       [Token::SEMICOLON, ";"],
       [Token::EOF, "$"],
     ]

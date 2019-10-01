@@ -45,6 +45,8 @@ class Lexer
     t = nil
     case @char
     when "+"; t = Token.new(TokenType::PLUS, "+")
+    when "-"; t = Token.new(TokenType::MINUS, "-")
+    when "*"; t = Token.new(TokenType::ASTERISK, "*")
     when "="; t = Token.new(TokenType::ASSIGN, "=")
     when ","; t = Token.new(TokenType::COMMA, ",")
     when ";"; t = Token.new(TokenType::SEMICOLON, ";")
@@ -52,9 +54,12 @@ class Lexer
     when ")"; t = Token.new(TokenType::RPAR, ")")
     when "{"; t = Token.new(TokenType::LBRACE, "{")
     when "}"; t = Token.new(TokenType::RBRACE, "}")
-    when lambda { |c| c.alpha? }
+    when ->(c) { c.alpha? }
       ident = self.read_identifier
       return Token.new(TokenType::lookup_identifier(ident), ident)
+    when ->(c) { c.digit? }
+      integer = self.read_integer
+      return Token.new(TokenType::INT, integer)
     when "$"; t = Token.new(TokenType::EOF, "$")
     else t = Token.new(TokenType::ILLEGAL, "ILLEGAL")
     end
@@ -71,6 +76,14 @@ class Lexer
   def read_identifier
     left = @pos
     while @char.letter?
+      self.read_char
+    end
+    return @input[left...@pos] # [left, @pos)
+  end
+
+  def read_integer
+    left = @pos
+    while @char.digit?
       self.read_char
     end
     return @input[left...@pos] # [left, @pos)

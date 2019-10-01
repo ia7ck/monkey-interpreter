@@ -38,8 +38,23 @@ class TestParser < Minitest::Test
     assert_equal(1, program.statements.size)
     stmt = program.statements[0]
     assert(stmt.instance_of?(ExpressionStatement))
+    assert(stmt.token)
     assert_equal(stmt.token.literal, "foobar")
     assert(stmt.expression.instance_of?(Identifier))
     assert_equal(stmt.expression.value, "foobar")
+  end
+
+  def test_integer_literal_expression
+    input = "123;"
+    pa = Parser.new(input)
+    program = pa.parse_program
+    assert(program)
+    assert_equal(1, program.statements.size)
+    stmt = program.statements[0]
+    assert(stmt.instance_of?(ExpressionStatement))
+    assert(stmt.token)
+    assert_equal(stmt.token.literal, "123")
+    assert(stmt.expression.instance_of?(IntegerLiteral))
+    assert_equal(stmt.expression.value, 123)
   end
 end

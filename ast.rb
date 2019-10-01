@@ -57,3 +57,12 @@ class Identifier < Expression
     @value = value
   end
 end
+
+class IntegerLiteral < Expression
+  attr_accessor :token, :value
+
+  def initialize(token, value)
+    @token = token
+    @value = value
+  end
+end

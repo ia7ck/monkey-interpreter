@@ -19,8 +19,12 @@ class Parser
     @nxt_token = nil
     self.advance_cursor
     self.advance_cursor
-    @prefix_parse_functions = [TokenType::IDENT].zip(
-      [-> { Identifier.new(@cur_token, @cur_token.literal) }]
+    @prefix_parse_functions = [
+      TokenType::IDENT,
+      TokenType::INT,
+    ].zip(
+      [-> { Identifier.new(@cur_token, @cur_token.literal) },
+       -> { IntegerLiteral.new(@cur_token, @cur_token.literal.to_i) }]
     ).to_h
   end
 
