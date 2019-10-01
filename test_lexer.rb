@@ -4,7 +4,7 @@ require "./token"
 require "./lexer"
 
 class TestLexer < Minitest::Test
-  def test_next_token
+  def test_read_token
     input = <<~EOS
       let myfunc =fn(x, y){
         return x+ y;
@@ -29,9 +29,10 @@ class TestLexer < Minitest::Test
       [Token::SEMICOLON, ";"],
       [Token::RBRACE, "}"],
       [Token::SEMICOLON, ";"],
+      [Token::EOF, "$"],
     ]
     tests.each do |t, l|
-      token = le.next_token
+      token = le.read_token
       assert_equal(t, token.type)
       assert_equal(l, token.literal)
     end

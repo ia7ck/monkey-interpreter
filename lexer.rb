@@ -40,7 +40,7 @@ class Lexer
     return @char
   end
 
-  def next_token
+  def read_token
     self.skip_whitespace
     t = nil
     case @char
@@ -55,6 +55,7 @@ class Lexer
     when lambda { |c| c.alpha? }
       ident = self.read_identifer
       return Token.new(TokenType::lookup_identifer(ident), ident)
+    when "$"; t = Token.new(TokenType::EOF, "$")
     else t = Token.new(TokenType::ILLEGAL, "ILLEGAL")
     end
     self.read_char
