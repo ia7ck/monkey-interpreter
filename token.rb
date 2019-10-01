@@ -8,6 +8,7 @@ module TokenType
   PLUS = "+"
   MINUS = "-"
   ASTERISK = "*"
+  BANG = "!"
 
   COMMA = ","
   SEMICOLON = ";"

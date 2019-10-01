@@ -19,13 +19,18 @@ class Parser
     @nxt_token = nil
     self.advance_cursor
     self.advance_cursor
+    # https://docs.ruby-lang.org/ja/2.2.0/class/Method.html
     @prefix_parse_functions = [
       TokenType::IDENT,
       TokenType::INT,
-    ].zip(
-      [-> { Identifier.new(@cur_token, @cur_token.literal) },
-       -> { IntegerLiteral.new(@cur_token, @cur_token.literal.to_i) }]
-    ).to_h
+      TokenType::MINUS,
+      TokenType::BANG,
+    ].zip([
+      :parse_identifier_expression,
+      :parse_integer_literal_expression,
+      :parse_prefix_expression,
+      :parse_prefix_expression,
+    ].map { |name| self.method(name) }).to_h
   end
 
   def advance_cursor
@@ -35,6 +40,10 @@ class Parser
 
   def current_token_type_is(token_type)
     @cur_token.type == token_type
+  end
+
+  def next_token_type_is(token_type)
+    @nxt_token.type == token_type
   end
 
   def expect_current_token_type_is(token_type)
@@ -84,7 +93,7 @@ class Parser
   def parse_expression_statement
     stmt = ExpressionStatement.new(@cur_token)
     stmt.expression = self.parse_expression(Precedence::LOWEST)
-    if @nxt_token.type == TokenType::SEMICOLON
+    if self.next_token_type_is(TokenType::SEMICOLON)
       self.advance_cursor
     end
     return stmt
@@ -92,10 +101,23 @@ class Parser
 
   def parse_expression(precedence)
     prefix = @prefix_parse_functions[@cur_token.type]
-    if prefix.nil?
-      return nil
-    end
+    raise "not found prefix parse function for #{@cur_token.type}" if prefix.nil?
     left_expression = prefix.call
     return left_expression
+  end
+
+  def parse_identifier_expression
+    Identifier.new(@cur_token, @cur_token.literal)
+  end
+
+  def parse_integer_literal_expression
+    IntegerLiteral.new(@cur_token, @cur_token.literal.to_i)
+  end
+
+  def parse_prefix_expression
+    expression = PrefixExpression.new(@cur_token, @cur_token.literal)
+    self.advance_cursor
+    expression.right_expression = self.parse_expression(Precedence::PREFIX)
+    return expression
   end
 end

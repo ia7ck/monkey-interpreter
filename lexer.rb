@@ -48,6 +48,7 @@ class Lexer
     when "-"; t = Token.new(TokenType::MINUS, "-")
     when "*"; t = Token.new(TokenType::ASTERISK, "*")
     when "="; t = Token.new(TokenType::ASSIGN, "=")
+    when "!"; t = Token.new(TokenType::BANG, "!")
     when ","; t = Token.new(TokenType::COMMA, ",")
     when ";"; t = Token.new(TokenType::SEMICOLON, ";")
     when "("; t = Token.new(TokenType::LPAR, "(")

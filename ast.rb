@@ -74,3 +74,17 @@ class IntegerLiteral < Expression
     @token.literal
   end
 end
+
+class PrefixExpression < Expression
+  attr_accessor :operator, :right_expression
+
+  def initialize(token, operator)
+    @token = token
+    @operator = operator
+    @right_expression = nil
+  end
+
+  def token_literal
+    @token.literal
+  end
+end

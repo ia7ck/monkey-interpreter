@@ -30,31 +30,54 @@ class TestParser < Minitest::Test
     assert_equal(name, stmt.name.token_literal)
   end
 
-  def test_identifier_expression
+  def test_parse_identifier_expression
     input = "foobar;"
     pa = Parser.new(input)
     program = pa.parse_program
     assert(program)
     assert_equal(1, program.statements.size)
     stmt = program.statements[0]
-    assert(stmt.instance_of?(ExpressionStatement))
+    assert_equal(ExpressionStatement, stmt.class)
     assert(stmt.token)
     assert_equal(stmt.token_literal, "foobar")
-    assert(stmt.expression.instance_of?(Identifier))
+    assert_equal(Identifier, stmt.expression.class)
     assert_equal(stmt.expression.value, "foobar")
   end
 
-  def test_integer_literal_expression
+  def test_parse_integer_literal_expression
     input = "123;"
     pa = Parser.new(input)
     program = pa.parse_program
     assert(program)
     assert_equal(1, program.statements.size)
     stmt = program.statements[0]
-    assert(stmt.instance_of?(ExpressionStatement))
+    assert_equal(ExpressionStatement, stmt.class)
     assert(stmt.token)
-    assert_equal(stmt.token_literal, "123")
-    assert(stmt.expression.instance_of?(IntegerLiteral))
-    assert_equal(stmt.expression.value, 123)
+    self._test_integer_literal(stmt.expression, 123)
+  end
+
+  def _test_integer_literal(integer_literal, value)
+    assert_equal(IntegerLiteral, integer_literal.class)
+    assert_equal(value, integer_literal.value)
+    assert_equal(value.to_s, integer_literal.token_literal)
+  end
+
+  def test_parse_prefix_expressions
+    prefix_test = Struct.new(:input, :operator, :integer_value)
+    tests = [
+      ["!777", "!", 777],
+      ["-88", "-", 88],
+    ].map { |i, o, iv| prefix_test.new(i, o, iv) }
+    tests.each do |t|
+      pa = Parser.new(t.input)
+      program = pa.parse_program
+      assert_equal(1, program.statements.size)
+      stmt = program.statements[0]
+      assert_equal(ExpressionStatement, stmt.class)
+      exp = stmt.expression
+      assert(exp)
+      assert_equal(t.operator, exp.operator)
+      self._test_integer_literal(exp.right_expression, t.integer_value)
+    end
   end
 end
