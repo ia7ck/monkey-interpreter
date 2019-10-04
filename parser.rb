@@ -25,11 +25,13 @@ class Parser
       TokenType::INT,
       TokenType::MINUS,
       TokenType::BANG,
+      TokenType::LPAR,
     ].zip([
       :parse_identifier_expression,
       :parse_integer_literal_expression,
       :parse_prefix_expression,
       :parse_prefix_expression,
+      :parse_grouped_expression,
     ].map { |name| self.method(name) }).to_h
     @infix_parse_functions = [
       TokenType::EQUAL,
@@ -139,6 +141,7 @@ class Parser
     return stmt
   end
 
+  # 1 * (2 - 3) + 4
   def parse_expression(precedence)
     prefix = @prefix_parse_functions[@cur_token.type]
     raise "not found prefix parse function for #{@cur_token.type}" if prefix.nil?
@@ -168,6 +171,13 @@ class Parser
     self.advance_cursor
     expression.right_expression = self.parse_expression(Precedence::PREFIX)
     return expression
+  end
+
+  def parse_grouped_expression # (...)
+    self.advance_cursor # (
+    exp = self.parse_expression(Precedence::LOWEST)
+    self.expect_next_token_type_is(TokenType::RPAR)
+    return exp
   end
 
   def parse_infix_expression(left_expression)
