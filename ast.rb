@@ -28,6 +28,18 @@ class Program
   def to_str; @statements.join("\n") end
 end
 
+class BlockStatement < Statement
+  attr_accessor :statements
+
+  def initialize
+    @token = Token.new(TokenType::LBRACE, "{")
+    @statements = []
+  end
+  
+  def token_literal; @token.literal end
+  def to_str; @statements.join("\n") end
+end
+
 class LetStatement < Statement
   attr_accessor :name, :value
 
@@ -78,6 +90,22 @@ class IntegerLiteral < Expression
 
   def token_literal; @token.literal end
   def to_str; @token.literal end
+end
+
+class FunctionLiteral < Expression
+  attr_accessor :parameters, :body
+
+  def initialize
+    @token = Token.new(TokenType::FUNCTION, "fn")
+    @parameters = []
+    @body = nil
+  end
+
+  def token_literal; @token.literal end
+
+  def to_str
+    "#{@token.literal} (#{@parameters.join(", ")}) #{@body.to_str}"
+  end
 end
 
 class PrefixExpression < Expression

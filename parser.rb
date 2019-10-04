@@ -26,12 +26,14 @@ class Parser
       TokenType::MINUS,
       TokenType::BANG,
       TokenType::LPAR,
+      TokenType::FUNCTION,
     ].zip([
       :parse_identifier_expression,
       :parse_integer_literal_expression,
       :parse_prefix_expression,
       :parse_prefix_expression,
       :parse_grouped_expression,
+      :parse_function_literal,
     ].map { |name| self.method(name) }).to_h
     @infix_parse_functions = [
       TokenType::EQUAL,
@@ -102,14 +104,26 @@ class Parser
 
   def parse_program
     program = Program.new
-    while @cur_token.type != TokenType::EOF
+    while not self.current_token_type_is(TokenType::EOF)
       stmt = self.parse_statement
-      if stmt
-        program.statements.push(stmt)
-      end
+      raise if stmt.nil?
+      program.statements.push(stmt)
       self.advance_cursor
     end
     return program
+  end
+
+  def parse_block_statement
+    self.advance_cursor # {
+    block_stmt = BlockStatement.new
+    while (not self.current_token_type_is(TokenType::EOF)) and
+          (not self.current_token_type_is(TokenType::RBRACE))
+      stmt = self.parse_statement
+      raise if stmt.nil?
+      block_stmt.statements.push(stmt)
+      self.advance_cursor
+    end
+    return block_stmt
   end
 
   def parse_statement
@@ -178,6 +192,31 @@ class Parser
     exp = self.parse_expression(Precedence::LOWEST)
     self.expect_next_token_type_is(TokenType::RPAR)
     return exp
+  end
+
+  def parse_function_literal # fn(a, b, ...) { ... }
+    fl = FunctionLiteral.new
+    self.expect_next_token_type_is(TokenType::LPAR)
+    fl.parameters = self.parse_function_parameters
+    self.expect_current_token_type_is(TokenType::RPAR)
+    self.expect_next_token_type_is(TokenType::LBRACE)
+    fl.body = self.parse_block_statement
+    self.expect_current_token_type_is(TokenType::RBRACE)
+    return fl
+  end
+
+  def parse_function_parameters # (a, b, ...) { ... }
+    identifiers = []
+    self.advance_cursor # (
+    while not self.current_token_type_is(TokenType::RPAR)
+      if self.current_token_type_is(TokenType::IDENT)
+        identifiers.push(Identifier.new(@cur_token, @cur_token.literal))
+      else
+        self.expect_current_token_type_is(TokenType::COMMA)
+      end
+      self.advance_cursor
+    end
+    return identifiers
   end
 
   def parse_infix_expression(left_expression)

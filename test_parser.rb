@@ -50,53 +50,86 @@ class TestParser < Minitest::Test
     stmt = program.statements[0]
     assert_equal(ExpressionStatement, stmt.class)
     assert(stmt.token)
-    self._test_integer_literal(stmt.expression, 123)
+    self._test_literal_expression(123, stmt.expression)
   end
 
-  def _test_integer_literal(integer_literal, value)
+  def _test_literal_expression(want, exp)
+    case exp
+    when IntegerLiteral; self._test_integer_literal(want, exp)
+    when Identifier; self._test_identifier(want, exp)
+    else assert(false, "type of exp not handled. got = #{exp}")
+    end
+  end
+
+  def _test_integer_literal(value, integer_literal)
     assert_equal(IntegerLiteral, integer_literal.class)
     assert_equal(value, integer_literal.value)
     assert_equal(value.to_s, integer_literal.token_literal)
   end
 
+  def _test_identifier(value, identifier)
+    assert_equal(Identifier, identifier.class)
+    assert_equal(value, identifier.value)
+    assert_equal(value, identifier.token_literal)
+  end
+
+  def test_parse_function_literal
+    input = "fn(x, y) { x + y; };"
+    pa = Parser.new(input)
+    program = pa.parse_program
+    assert(program)
+    assert_equal(1, program.statements.size)
+    stmt = program.statements[0]
+    assert_equal(FunctionLiteral, stmt.expression.class)
+    fl = stmt.expression
+    assert_equal(2, fl.parameters.size)
+    assert_equal(1, fl.body.statements.size)
+    body_stmt = fl.body.statements[0]
+    assert_equal(ExpressionStatement, body_stmt.class)
+    self._test_infix_expression(body_stmt.expression, "x", "+", "y")
+  end
+
   def test_parse_prefix_expressions
-    prefix_test = Struct.new(:input, :operator, :integer_value)
     tests = [
       ["!777", "!", 777],
       ["-88;", "-", 88],
-    ].map { |args| prefix_test.new(*args) }
-    tests.each do |t|
-      pa = Parser.new(t.input)
+    ]
+    tests.each do |input, operator, integer_value|
+      pa = Parser.new(input)
       program = pa.parse_program
       assert_equal(1, program.statements.size)
       stmt = program.statements[0]
       assert_equal(ExpressionStatement, stmt.class)
       exp = stmt.expression
       assert(exp)
-      assert_equal(t.operator, exp.operator)
-      self._test_integer_literal(exp.right_expression, t.integer_value)
+      assert_equal(operator, exp.operator)
+      self._test_literal_expression(integer_value, exp.right_expression)
     end
   end
 
   def test_parse_infix_expressions
-    infix_test = Struct.new(:input, :left_value, :operator, :right_value)
     tests = [
       ["1 + 23;", 1, "+", 23],
       ["1 != 23;", 1, "!=", 23],
       ["1 < 23;", 1, "<", 23],
-    ].map { |args| infix_test.new(*args) }
-    tests.each do |t|
-      pa = Parser.new(t.input)
+    ]
+    tests.each do |input, left_value, operator, right_value|
+      pa = Parser.new(input)
       program = pa.parse_program
       assert_equal(1, program.statements.size)
       stmt = program.statements[0]
       assert_equal(ExpressionStatement, stmt.class)
       exp = stmt.expression
       assert(exp)
-      self._test_integer_literal(exp.left_expression, t.left_value)
-      assert_equal(t.operator, exp.operator)
-      self._test_integer_literal(exp.right_expression, t.right_value)
+      self._test_infix_expression(exp, left_value, operator, right_value)
     end
+  end
+
+  def _test_infix_expression(exp, left, operator, right)
+    assert_equal(InfixExpression, exp.class)
+    self._test_literal_expression(left, exp.left_expression)
+    assert_equal(operator, exp.operator)
+    self._test_literal_expression(right, exp.right_expression)
   end
 
   def test_operator_precedence
