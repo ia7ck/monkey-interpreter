@@ -25,7 +25,7 @@ class Program
     @statements = []
   end
 
-  def to_str; @statements.join("\n") end
+  def to_str; @statements.join(" ") end
 end
 
 class BlockStatement < Statement
@@ -35,9 +35,9 @@ class BlockStatement < Statement
     @token = Token.new(TokenType::LBRACE, "{")
     @statements = []
   end
-  
+
   def token_literal; @token.literal end
-  def to_str; @statements.join("\n") end
+  def to_str; @statements.join(" ") end
 end
 
 class LetStatement < Statement

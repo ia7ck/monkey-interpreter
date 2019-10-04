@@ -134,10 +134,7 @@ class TestParser < Minitest::Test
     tests = [
       [
         "1 + 2 + x; a+b",
-        <<~EOS
-          ((1 + 2) + x)
-          (a + b)
-        EOS
+        "((1 + 2) + x) (a + b)",
       ],
       ["1 * (2 + x);", "(1 * (2 + x))"],
       ["-a*b", "((-a) * b)"],
@@ -148,7 +145,7 @@ class TestParser < Minitest::Test
     tests.each do |input, output|
       pa = Parser.new(input)
       program = pa.parse_program
-      assert_equal(output.chomp, program.to_str)
+      assert_equal(output, program.to_str)
     end
   end
 end
