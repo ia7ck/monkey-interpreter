@@ -39,6 +39,8 @@ class LetStatement < Statement
 
   def token_literal; @token.literal end
 
+  # to_s で実装すると変数展開のときにいい感じにしてくれるらしい
+  # to_str だと "let = " + @name + " = " + @value とかすればいい
   def to_str; "let #{@name.to_str} = #{@value.to_str}" end
 end
 
