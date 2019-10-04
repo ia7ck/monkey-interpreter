@@ -19,8 +19,7 @@ class TestEvaluator < Minitest::Test
   def _eval(input)
     pa = Parser.new(input)
     program = pa.parse_program
-    res = evaluate(program)
-    return res
+     Evaluator.evaluate(program)
   end
 
   def _test_integer_object(obj, want_value)
