@@ -12,7 +12,7 @@ while true
     puts err
     next
   end
-  evaluated = evaluate(program)
+  evaluated = Evaluator.evaluate(program)
   if evaluated
     puts evaluated.inspect
   end

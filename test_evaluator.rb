@@ -9,6 +9,8 @@ class TestEvaluator < Minitest::Test
     tests = [
       ["1;", 1],
       ["23", 23],
+      ["- 1;", -1],
+      ["-23", -23],
     ]
     tests.each do |input, want_value|
       evaluated = self._eval(input)
@@ -19,7 +21,7 @@ class TestEvaluator < Minitest::Test
   def _eval(input)
     pa = Parser.new(input)
     program = pa.parse_program
-     Evaluator.evaluate(program)
+    Evaluator.evaluate(program)
   end
 
   def _test_integer_object(obj, want_value)
