@@ -36,9 +36,7 @@ class TestParser < Minitest::Test
     stmt = program.statements[0]
     assert_equal(ExpressionStatement, stmt.class)
     assert(stmt.token)
-    assert_equal(stmt.token_literal, "foobar")
-    assert_equal(Identifier, stmt.expression.class)
-    assert_equal(stmt.expression.value, "foobar")
+    self._test_literal_expression("foobar", stmt.expression)
   end
 
   def test_parse_integer_literal_expression
