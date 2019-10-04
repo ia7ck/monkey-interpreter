@@ -13,6 +13,10 @@ module Evaluator
     when PrefixExpression
       right_obj = evaluate(node.right_expression)
       eval_prefix_expression(node.operator, right_obj)
+    when InfixExpression
+      left_obj = evaluate(node.left_expression)
+      right_obj = evaluate(node.right_expression)
+      eval_infix_expression(node.operator, left_obj, right_obj)
     when IntegerLiteral; MonkeyInteger.new(node.value)
     else nil
     end
@@ -38,6 +42,25 @@ module Evaluator
       MonkeyInteger.new(obj.value * (-1))
     else
       NULL
+    end
+  end
+
+  def eval_infix_expression(operator, left_obj, right_obj)
+    if [left_obj, right_obj].all? { |o| o.instance_of?(MonkeyInteger) }
+      eval_integer_infix_expression(operator, left_obj, right_obj)
+    else
+      NULL
+    end
+  end
+
+  def eval_integer_infix_expression(operator, left_obj, right_obj)
+    left_value, right_value = left_obj.value, right_obj.value
+    case operator
+    when "+"; MonkeyInteger.new(left_value + right_value)
+    when "-"; MonkeyInteger.new(left_value - right_value)
+    when "*"; MonkeyInteger.new(left_value * right_value)
+    when "/"; MonkeyInteger.new(left_value / right_value)
+    else NULL
     end
   end
 end

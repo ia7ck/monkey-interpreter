@@ -11,6 +11,8 @@ class TestEvaluator < Minitest::Test
       ["23", 23],
       ["- 1;", -1],
       ["-23", -23],
+      ["1 + -23", -22],
+      ["12 * -3 / 9 - 1", -5],
     ]
     tests.each do |input, want_value|
       evaluated = self._eval(input)
