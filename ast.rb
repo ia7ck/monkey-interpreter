@@ -25,7 +25,7 @@ class Program
     @statements = []
   end
 
-  def to_str; @statements.join end
+  def to_str; @statements.join("\n") end
 end
 
 class LetStatement < Statement
@@ -52,7 +52,7 @@ class ExpressionStatement < Statement
 
   def token_literal; @token.literal end
 
-  def to_str; @expression.nil? ? "" : @expression.to_str end
+  def to_str; @expression.to_str end
 end
 
 class Identifier < Expression
