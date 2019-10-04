@@ -53,7 +53,6 @@ class ExpressionStatement < Statement
   end
 
   def token_literal; @token.literal end
-
   def to_str; @expression.to_str end
 end
 
@@ -66,7 +65,6 @@ class Identifier < Expression
   end
 
   def token_literal; @token.literal end
-
   def to_str; @token.literal end
 end
 
@@ -79,7 +77,6 @@ class IntegerLiteral < Expression
   end
 
   def token_literal; @token.literal end
-
   def to_str; @token.literal end
 end
 
@@ -93,7 +90,6 @@ class PrefixExpression < Expression
   end
 
   def token_literal; @token.literal end
-
   def to_str; "(#{@operator}#{@right_expression.to_str})" end
 end
 
