@@ -20,23 +20,15 @@ class MonkeyInteger
     @value = value
   end
 
-  def type
-    INT_OBJ
-  end
+  def type; INT_OBJ end
 
-  def inspect
-    @value.to_s
-  end
+  def inspect; @value.to_s end
 end
 
 class MonkeyNull
   include MonkeyObject
 
-  def type
-    NULL_OBJ
-  end
+  def type; NULL_OBJ end
 
-  def inspect
-    "null"
-  end
+  def inspect; "null" end
 end

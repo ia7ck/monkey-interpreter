@@ -25,9 +25,7 @@ class Program
     @statements = []
   end
 
-  def to_str
-    @statements.join
-  end
+  def to_str; @statements.join end
 end
 
 class LetStatement < Statement
@@ -39,13 +37,9 @@ class LetStatement < Statement
     @value = nil
   end
 
-  def token_literal
-    @token.literal
-  end
+  def token_literal; @token.literal end
 
-  def to_str
-    "let #{@name.to_str} = #{@value.to_str}"
-  end
+  def to_str; "let #{@name.to_str} = #{@value.to_str}" end
 end
 
 class ExpressionStatement < Statement
@@ -56,13 +50,9 @@ class ExpressionStatement < Statement
     @expression = nil
   end
 
-  def token_literal
-    @token.literal
-  end
+  def token_literal; @token.literal end
 
-  def to_str
-    @expression.nil? ? "" : @expression.to_str
-  end
+  def to_str; @expression.nil? ? "" : @expression.to_str end
 end
 
 class Identifier < Expression
@@ -73,13 +63,9 @@ class Identifier < Expression
     @value = value
   end
 
-  def token_literal
-    @token.literal
-  end
+  def token_literal; @token.literal end
 
-  def to_str
-    @token.literal
-  end
+  def to_str; @token.literal end
 end
 
 class IntegerLiteral < Expression
@@ -90,13 +76,9 @@ class IntegerLiteral < Expression
     @value = value
   end
 
-  def token_literal
-    @token.literal
-  end
+  def token_literal; @token.literal end
 
-  def to_str
-    @token.literal
-  end
+  def to_str; @token.literal end
 end
 
 class PrefixExpression < Expression
@@ -108,13 +90,9 @@ class PrefixExpression < Expression
     @right_expression = nil
   end
 
-  def token_literal
-    @token.literal
-  end
+  def token_literal; @token.literal end
 
-  def to_str
-    "(#{@operator}#{@right_expression.to_str})"
-  end
+  def to_str; "(#{@operator}#{@right_expression.to_str})" end
 end
 
 class InfixExpression < Expression
