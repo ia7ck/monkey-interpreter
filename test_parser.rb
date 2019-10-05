@@ -15,16 +15,17 @@ class TestParser < Minitest::Test
     program = pa.parse_program
     assert(program)
     assert_equal(2, program.statements.size)
-    tests = ["a", "p"]
-    tests.each_with_index do |name, i|
+    tests = [["a", "(-123)"], ["p", "(q + (-r))"]]
+    tests.each_with_index do |(name, value), i|
       stmt = program.statements[i]
-      self._test_let_statement(stmt, name)
+      self._test_let_statement(stmt, name, value)
     end
   end
 
-  def _test_let_statement(stmt, name)
+  def _test_let_statement(stmt, name, value)
     assert_equal("let", stmt.token_literal)
     assert_equal(name, stmt.name.token_literal)
+    assert_equal(value, stmt.value.to_str)
   end
 
   def test_parse_identifier_expression
