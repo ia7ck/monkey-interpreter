@@ -35,7 +35,7 @@ class Parser
       :parse_grouped_expression,
       :parse_function_literal,
     ].map { |name| self.method(name) }).to_h
-    @infix_parse_functions = [
+    @infix_parse_functions = ([
       TokenType::EQUAL,
       TokenType::NOT_EQUAL,
       TokenType::LT,
@@ -45,8 +45,10 @@ class Parser
       TokenType::ASTERISK,
       TokenType::SLASH,
     ].product([
-      :parse_infix_expression,
-    ].map { |name| self.method(name) }).to_h
+      self.method(:parse_infix_expression),
+    ]) + [
+      [TokenType::LPAR, self.method(:parse_call_expression)],
+    ]).to_h
     @precedences = [
       TokenType::EQUAL,
       TokenType::NOT_EQUAL,
@@ -56,6 +58,7 @@ class Parser
       TokenType::MINUS,
       TokenType::ASTERISK,
       TokenType::SLASH,
+      TokenType::LPAR,
     ].zip([
       Precedence::EQUALS,
       Precedence::EQUALS,
@@ -65,6 +68,7 @@ class Parser
       Precedence::SUM,
       Precedence::PRODUCT,
       Precedence::PRODUCT,
+      Precedence::CALL,
     ]).to_h
   end
 
@@ -225,5 +229,22 @@ class Parser
     self.advance_cursor
     expression.right_expression = self.parse_expression(precedence)
     return expression
+  end
+
+  def parse_call_expression(function)
+    CallExpression.new(function, self.parse_call_arguments)
+  end
+
+  def parse_call_arguments # (a + b, -c, ...)
+    arguments = []
+    self.expect_current_token_type_is(TokenType::LPAR)
+    self.advance_cursor # (
+    while not self.current_token_type_is(TokenType::RPAR)
+      if not self.current_token_type_is(TokenType::COMMA)
+        arguments.push(self.parse_expression(Precedence::LOWEST))
+      end
+      self.advance_cursor
+    end
+    return arguments
   end
 end

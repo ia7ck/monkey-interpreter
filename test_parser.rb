@@ -84,7 +84,26 @@ class TestParser < Minitest::Test
     assert_equal(1, fl.body.statements.size)
     body_stmt = fl.body.statements[0]
     assert_equal(ExpressionStatement, body_stmt.class)
-    self._test_infix_expression(body_stmt.expression, "x", "+", "y")
+    self._test_infix_expression("x", "+", "y", body_stmt.expression)
+  end
+
+  def test_parse_function_parameters
+    tests = [
+      ["fn() {};", []],
+      ["fn(x) {}", ["x"]],
+      ["fn(x, y, z) {}", ["x", "y", "z"]],
+    ]
+    tests.each do |input, wants|
+      pa = Parser.new(input)
+      program = pa.parse_program
+      stmt = program.statements[0]
+      fl = stmt.expression
+      params = fl.parameters
+      assert_equal(wants.size, params.size)
+      wants.zip(params).each do |want, param|
+        self._test_identifier(want, param)
+      end
+    end
   end
 
   def test_parse_prefix_expressions
@@ -119,15 +138,48 @@ class TestParser < Minitest::Test
       assert_equal(ExpressionStatement, stmt.class)
       exp = stmt.expression
       assert(exp)
-      self._test_infix_expression(exp, left_value, operator, right_value)
+      self._test_infix_expression(left_value, operator, right_value, exp)
     end
   end
 
-  def _test_infix_expression(exp, left, operator, right)
+  def _test_infix_expression(left, operator, right, exp)
     assert_equal(InfixExpression, exp.class)
     self._test_literal_expression(left, exp.left_expression)
     assert_equal(operator, exp.operator)
     self._test_literal_expression(right, exp.right_expression)
+  end
+
+  def test_parse_call_expression
+    input = "add(a, 2 * 3, 4 + 5);"
+    pa = Parser.new(input)
+    program = pa.parse_program
+    stmt = program.statements[0]
+    exp = stmt.expression
+    self._test_literal_expression("add", exp.function)
+    args = exp.arguments
+    assert_equal(3, args.size)
+    self._test_literal_expression("a", args[0])
+    self._test_infix_expression(2, "*", 3, args[1])
+    self._test_infix_expression(4, "+", 5, args[2])
+  end
+
+  def test_parse_call_arguments
+    tests = [
+      ["f();", []],
+      ["f(x * y)", ["(x * y)"]],
+      ["f(x + 1, -y, g(x, y))", ["(x + 1)", "(-y)", "g(x, y)"]],
+    ]
+    tests.each do |input, wants|
+      pa = Parser.new(input)
+      program = pa.parse_program
+      stmt = program.statements[0]
+      exp = stmt.expression
+      args = exp.arguments
+      assert_equal(wants.size, args.size)
+      wants.zip(args).each do |want, arg|
+        assert_equal(want, arg.to_str)
+      end
+    end
   end
 
   def test_operator_precedence
@@ -141,6 +193,7 @@ class TestParser < Minitest::Test
       ["!-a", "(!(-a))"],
       ["1 < 2 == 3 > 4", "((1 < 2) == (3 > 4))"],
       ["let p = q + -r;", "let p = (q + (-r))"],
+      ["a + add(b * c)  - d", "((a + add((b * c))) - d)"],
     ]
     tests.each do |input, output|
       pa = Parser.new(input)

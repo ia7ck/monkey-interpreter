@@ -135,3 +135,16 @@ class InfixExpression < Expression
     "(#{@left_expression.to_str} #{@operator} #{@right_expression.to_str})"
   end
 end
+
+class CallExpression < Expression
+  attr_accessor :function, :arguments
+
+  def initialize(function, arguments)
+    @token = Token.new(TokenType::LPAR, "(")
+    @function = function # identifier or function_literal
+    @arguments = arguments
+  end
+
+  def token_literal; @token.literal end
+  def to_str; "#{@function.to_str}(#{@arguments.join(", ")})" end
+end
