@@ -14,5 +14,5 @@ while true
     puts err
     next
   end
-  puts evaluated.inspect
+  puts evaluated # evaluated.to_s
 end

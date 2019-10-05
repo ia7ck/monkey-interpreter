@@ -15,6 +15,7 @@ module Evaluator
     when LetStatement
       value = evaluate(node.value, env)
       env.set(node.name.value, value) # node.name は Identifier
+    when BlockStatement; eval_statements(node.statements, env)
     when PrefixExpression
       right_obj = evaluate(node.right_expression, env)
       eval_prefix_expression(node.operator, right_obj)
@@ -24,6 +25,11 @@ module Evaluator
       eval_infix_expression(node.operator, left_obj, right_obj)
     when Identifier; eval_identifier(node.value, env)
     when IntegerLiteral; MonkeyInteger.new(node.value)
+    when FunctionLiteral; MonkeyFunction.new(node.parameters, node.body, env)
+    when CallExpression
+      function = evaluate(node.function, env)
+      arguments = eval_expressions(node.arguments, env)
+      apply_function(function, arguments)
     else nil
     end
   end
@@ -74,5 +80,28 @@ module Evaluator
     value = env.get(name)
     raise(MonkeyLanguageError, "identifier not found: #{name}") if value.nil?
     return value
+  end
+
+  def eval_expressions(arguments, env)
+    arguments.map { |arg| evaluate(arg, env) }
+  end
+
+  def apply_function(function, arguments)
+    if function.parameters.size != arguments.size
+      raise(
+        MonkeyLanguageError,
+        "wrong number of arguments: expected #{function.parameters.size}, given #{arguments.size}"
+      )
+    end
+    extended_env = extend_function_env(function, arguments)
+    return evaluate(function.body, extended_env)
+  end
+
+  def extend_function_env(function, arguments)
+    env = Environment.new(outer: function.env)
+    function.parameters.zip(arguments).each do |param, arg|
+      env.set(param.value, arg)
+    end
+    return env
   end
 end
