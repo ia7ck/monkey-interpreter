@@ -72,4 +72,9 @@ class Environment
   def set(name, obj)
     @store[name.intern] = obj
   end
+
+  def deep_copy
+    # https://docs.ruby-lang.org/ja/latest/method/Object/i/clone.html
+    Marshal.load(Marshal.dump(self))
+  end
 end

@@ -25,7 +25,7 @@ module Evaluator
       eval_infix_expression(node.operator, left_obj, right_obj)
     when Identifier; eval_identifier(node.value, env)
     when IntegerLiteral; MonkeyInteger.new(node.value)
-    when FunctionLiteral; MonkeyFunction.new(node.parameters, node.body, env)
+    when FunctionLiteral; MonkeyFunction.new(node.parameters, node.body, env.deep_copy)
     when CallExpression
       function = evaluate(node.function, env)
       arguments = eval_expressions(node.arguments, env)

@@ -82,6 +82,7 @@ class TestEvaluator < Minitest::Test
       ["1 == 2;", "unknown operator: INTEGER==INTEGER"],
       ["foobar;", "identifier not found: foobar"],
       ["fn(x, y) {} (1)", "wrong number of arguments: expected 2, given 1"],
+      ["let f = fn() {x * 2}; let x = 123; f();", "identifier not found: x"],
     ]
     tests.each do |input, want_message|
       err = assert_raises(MonkeyLanguageError) do
