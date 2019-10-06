@@ -63,6 +63,9 @@ Closure is evaluated with specified environment: when the closure is defined.
 > let double_x = fn() { x * 2; };
 > double_x();
 246
+> let x = 321;
+> double_x();
+246
 > let triple_y = fn() { y * 3; };
 > let y = -456;
 > triple_y();
