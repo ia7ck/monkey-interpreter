@@ -12,12 +12,15 @@ module Evaluator
 
   def evaluate(node, env)
     case node
-    when Program; eval_statements(node.statements, env)
+    when Program; eval_program(node, env)
     when ExpressionStatement; evaluate(node.expression, env)
     when LetStatement
       value = evaluate(node.value, env)
       env.set(node.name.value, value) # node.name は Identifier
-    when BlockStatement; eval_statements(node.statements, env)
+    when ReturnStatement
+      value = evaluate(node.return_value, env)
+      MonkeyReturnValue.new(value)
+    when BlockStatement; eval_block_statement(node, env)
     when PrefixExpression
       right_obj = evaluate(node.right_expression, env)
       eval_prefix_expression(node.operator, right_obj)
@@ -42,10 +45,24 @@ module Evaluator
 
   def native_bool_to_boolean_object(b); b ? TRUE : FALSE end
 
-  def eval_statements(stmts, env)
+  def eval_program(program, env)
     result = nil
-    stmts.each do |statement|
+    program.statements.each do |statement|
       result = evaluate(statement, env)
+      if result.instance_of?(MonkeyReturnValue)
+        return result.value
+      end
+    end
+    return result
+  end
+
+  def eval_block_statement(block, env)
+    result = nil
+    block.statements.each do |statement|
+      result = evaluate(statement, env)
+      if result and result.type == MonkeyObject::RETURN_VALUE_OBJ
+        return result
+      end
     end
     return result
   end

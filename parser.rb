@@ -139,6 +139,7 @@ class Parser
   def parse_statement
     case @cur_token.type
     when TokenType::LET; self.parse_let_statement
+    when TokenType::RETURN; self.parse_return_statement
     else self.parse_expression_statement
     end
   end
@@ -154,6 +155,16 @@ class Parser
       self.advance_cursor
     end
     return let_stmt
+  end
+
+  def parse_return_statement
+    ret_stmt = ReturnStatement.new
+    self.advance_cursor # return
+    ret_stmt.return_value = self.parse_expression(Precedence::LOWEST)
+    if self.next_token_type_is(TokenType::SEMICOLON)
+      self.advance_cursor
+    end
+    return ret_stmt
   end
 
   def parse_expression_statement

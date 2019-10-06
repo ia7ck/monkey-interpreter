@@ -29,6 +29,7 @@ module TokenType
   FALSE = "FALSE"
   IF = "IF"
   ELSE = "ELSE"
+  RETURN = "RETURN"
 
   EOF = "$" # eof の代わり
 
@@ -39,6 +40,7 @@ module TokenType
     false: TokenType::FALSE,
     if: TokenType::IF,
     else: TokenType::ELSE,
+    return: TokenType::RETURN,
   }
 
   # ident が予約語なら対応する token type (FUNCTION, LET, ...) を返す

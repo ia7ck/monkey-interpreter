@@ -89,6 +89,25 @@ class TestEvaluator < Minitest::Test
     end
   end
 
+  def test_return_statements
+    tests = [
+      ["return 1; 2;", 1],
+      [<<~EOS,
+        if (true) {
+          if (true) {
+            return 4;
+          }
+          return 5;
+        }
+      EOS
+       4],
+    ]
+    tests.each do |input, want|
+      evaluated = self._eval(input)
+      self._test_integer_object(want, evaluated)
+    end
+  end
+
   def test_function_object
     input = "fn(x) { x + 2; }"
     evaluated = self._eval(input)

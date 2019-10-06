@@ -28,6 +28,16 @@ class TestParser < Minitest::Test
     assert_equal(value, stmt.value.to_str)
   end
 
+  def test_return_statements
+    input = "return 1; return a + b;"
+    pa = Parser.new(input)
+    program = pa.parse_program
+    tests = ["1", "(a + b)"]
+    tests.each_with_index do |want, i|
+      assert_equal(want, program.statements[i].return_value.to_str)
+    end
+  end
+
   def test_parse_identifier_expression
     input = "foobar;"
     pa = Parser.new(input)

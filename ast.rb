@@ -56,6 +56,18 @@ class LetStatement < Statement
   def to_str; "let #{@name.to_str} = #{@value.to_str}" end
 end
 
+class ReturnStatement < Statement
+  attr_accessor :return_value
+
+  def initialize
+    @token = Token.new(TokenType::RETURN, "return")
+    @return_value = nil
+  end
+
+  def token_literal; @token.literal end
+  def to_str; "return #{@return_value.to_str}" end
+end
+
 class ExpressionStatement < Statement
   attr_accessor :token, :expression
 

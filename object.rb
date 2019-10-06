@@ -1,6 +1,7 @@
 module MonkeyObject
   INTEGER_OBJ = "INTEGER"
   BOOLEAN_OBJ = "BOOLEAN"
+  RETURN_VALUE_OBJ = "RETURN_VALUE"
   FUNCTION_OBJ = "FUNCTION"
   NULL_OBJ = "NULL"
 
@@ -36,6 +37,19 @@ class MonkeyBoolean
   end
 
   def type; BOOLEAN_OBJ end
+  def to_s; @value.to_s end
+end
+
+class MonkeyReturnValue
+  include MonkeyObject
+
+  attr_accessor :value
+
+  def initialize(value)
+    @value = value
+  end
+
+  def type; RETURN_VALUE_OBJ end
   def to_s; @value.to_s end
 end
 

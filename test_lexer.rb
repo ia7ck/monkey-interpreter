@@ -10,7 +10,7 @@ class TestLexer < Minitest::Test
       a + -23;
       1 != 2;
       2 < 3;
-      if (true == false) {1} else {0}
+      if (true == false) {1} else { return 0 }
     EOS
     le = Lexer.new(input)
     tests = [
@@ -49,6 +49,7 @@ class TestLexer < Minitest::Test
       [TokenType::RBRACE, "}"],
       [TokenType::ELSE, "else"],
       [TokenType::LBRACE, "{"],
+      [TokenType::RETURN, "return"],
       [TokenType::INT, "0"],
       [TokenType::RBRACE, "}"],
       [TokenType::EOF, "$"],
