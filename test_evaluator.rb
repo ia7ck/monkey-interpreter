@@ -119,8 +119,10 @@ class TestEvaluator < Minitest::Test
   def test_apply_function
     tests = [
       ["let id = fn(x) {x;}; id(5);", 5],
-      # ["let id = fn(x) {return x;}; id(5);", 5], # TODO
+      ["fn(x){x/2}(6)", 3],
+      ["let id = fn(x) {return x;}; id(2);", 2],
       ["let add = fn(x, y) {x + y;}; add(1, add(2, 3));", 6],
+      ["let fact = fn(n) {if (n == 0) {1} else {n * fact(n - 1)}}; fact(4);", 24],
     ]
     tests.each do |input, want|
       evaluated = self._eval(input)

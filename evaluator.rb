@@ -17,6 +17,10 @@ module Evaluator
     when LetStatement
       value = evaluate(node.value, env)
       env.set(node.name.value, value) # node.name は Identifier
+      if value.instance_of?(MonkeyFunction)
+        value.env.set(node.name.value, value) # 再帰関数のために必要
+      end
+      return value
     when ReturnStatement
       value = evaluate(node.return_value, env)
       MonkeyReturnValue.new(value)
