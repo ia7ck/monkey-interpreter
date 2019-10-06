@@ -104,6 +104,27 @@ class BooleanLiteral < Expression
   def to_str; @token.literal end
 end
 
+class IfExpression < Expression
+  attr_accessor :condition, :consequence, :alternative
+
+  def initialize
+    @token = Token.new(TokenType::IF, "if")
+    @condition = nil
+    @consequence = nil
+    @alternative = nil
+  end
+
+  def token_literal; @token.literal end
+
+  def to_str
+    if @alternative
+      "if (#{@condition.to_str}) #{@consequence.to_str} else #{@alternative.to_str}"
+    else
+      "if (#{@condition.to_str}) #{@consequence.to_str}"
+    end
+  end
+end
+
 class FunctionLiteral < Expression
   attr_accessor :parameters, :body
 

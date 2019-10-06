@@ -25,6 +25,7 @@ class Parser
       TokenType::INT,
       TokenType::TRUE,
       TokenType::FALSE,
+      TokenType::IF,
       TokenType::MINUS,
       TokenType::BANG,
       TokenType::LPAR,
@@ -34,6 +35,7 @@ class Parser
       :parse_integer_literal_expression,
       :parse_boolean_literal_expression,
       :parse_boolean_literal_expression,
+      :parse_if_expression,
       :parse_prefix_expression,
       :parse_prefix_expression,
       :parse_grouped_expression,
@@ -190,6 +192,22 @@ class Parser
 
   def parse_boolean_literal_expression
     BooleanLiteral.new(@cur_token, self.current_token_type_is(TokenType::TRUE))
+  end
+
+  def parse_if_expression
+    ie = IfExpression.new
+    self.expect_next_token_type_is(TokenType::LPAR)
+    ie.condition = self.parse_expression(Precedence::LOWEST)
+    self.expect_current_token_type_is(TokenType::RPAR)
+    self.expect_next_token_type_is(TokenType::LBRACE)
+    ie.consequence = self.parse_block_statement
+    self.expect_current_token_type_is(TokenType::RBRACE)
+    if self.next_token_type_is(TokenType::ELSE)
+      self.advance_cursor # else
+      self.expect_next_token_type_is(TokenType::LBRACE)
+      ie.alternative = self.parse_block_statement
+    end
+    return ie
   end
 
   def parse_prefix_expression

@@ -28,6 +28,9 @@ module Evaluator
     when Identifier; eval_identifier(node.value, env)
     when IntegerLiteral; MonkeyInteger.new(node.value)
     when BooleanLiteral; native_bool_to_boolean_object(node.value)
+    when IfExpression
+      condition = evaluate(node.condition, env)
+      eval_if_else_expression(condition, node.consequence, node.alternative, env)
     when FunctionLiteral; MonkeyFunction.new(node.parameters, node.body, env.deep_copy)
     when CallExpression
       function = evaluate(node.function, env)
@@ -107,6 +110,20 @@ module Evaluator
     value = env.get(name)
     raise(MonkeyLanguageError, "identifier not found: #{name}") if value.nil?
     return value
+  end
+
+  def eval_if_else_expression(condition, consequence, alternative, env)
+    if is_truthy(condition)
+      evaluate(consequence, env)
+    elsif alternative
+      evaluate(alternative, env)
+    else
+      NULL
+    end
+  end
+
+  def is_truthy(obj)
+    obj != NULL and obj != FALSE
   end
 
   def eval_expressions(arguments, env)

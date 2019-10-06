@@ -27,6 +27,8 @@ module TokenType
   LET = "LET" # let
   TRUE = "TRUE"
   FALSE = "FALSE"
+  IF = "IF"
+  ELSE = "ELSE"
 
   EOF = "$" # eof の代わり
 
@@ -35,6 +37,8 @@ module TokenType
     let: TokenType::LET,
     true: TokenType::TRUE,
     false: TokenType::FALSE,
+    if: TokenType::IF,
+    else: TokenType::ELSE,
   }
 
   # ident が予約語なら対応する token type (FUNCTION, LET, ...) を返す

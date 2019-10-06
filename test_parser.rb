@@ -88,6 +88,25 @@ class TestParser < Minitest::Test
     assert_equal(value.to_s, boolean_literal.token_literal)
   end
 
+  def test_if_expression
+    input = "if (x < y) {x};"
+    pa = Parser.new(input)
+    program = pa.parse_program
+    exp = program.statements[0].expression
+    self._test_infix_expression("x", "<", "y", exp.condition)
+    assert_equal(1, exp.consequence.statements.size)
+    self._test_identifier("x", exp.consequence.statements[0].expression)
+    assert_nil(exp.alternative)
+  end
+
+  def test_if_else_expression
+    input = "if (x < y) {x} else {y}"
+    pa = Parser.new(input)
+    program = pa.parse_program
+    alt = program.statements[0].expression.alternative
+    self._test_identifier("y", alt.statements[0].expression)
+  end
+
   def test_parse_function_literal
     input = "fn(x, y) { x + y; };"
     pa = Parser.new(input)

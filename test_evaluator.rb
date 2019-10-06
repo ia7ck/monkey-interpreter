@@ -57,6 +57,27 @@ class TestEvaluator < Minitest::Test
     assert_equal(want, obj.value)
   end
 
+  def test_if_else_expressions
+    tests = [
+      ["if (true) {10}", 10],
+      ["if (false) {10}", nil],
+      ["if (1) {23}", 23],
+      ["if (1 > 2) {34} else {5}", 5],
+    ]
+    tests.each do |input, want|
+      evaluated = self._eval(input)
+      if want
+        self._test_integer_object(want, evaluated)
+      else
+        self._test_null_object(evaluated)
+      end
+    end
+  end
+
+  def _test_null_object(obj)
+    assert_equal(Evaluator::NULL, obj)
+  end
+
   def test_let_statements
     tests = [
       ["let a = 5; a;", 5],
