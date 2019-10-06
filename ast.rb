@@ -92,6 +92,18 @@ class IntegerLiteral < Expression
   def to_str; @token.literal end
 end
 
+class BooleanLiteral < Expression
+  attr_accessor :token, :value
+
+  def initialize(token, value)
+    @token = token
+    @value = value
+  end
+
+  def token_literal; @token.literal end
+  def to_str; @token.literal end
+end
+
 class FunctionLiteral < Expression
   attr_accessor :parameters, :body
 

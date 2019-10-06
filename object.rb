@@ -1,5 +1,6 @@
 module MonkeyObject
-  INT_OBJ = "INTEGER"
+  INTEGER_OBJ = "INTEGER"
+  BOOLEAN_OBJ = "BOOLEAN"
   FUNCTION_OBJ = "FUNCTION"
   NULL_OBJ = "NULL"
 
@@ -21,7 +22,20 @@ class MonkeyInteger
     @value = value
   end
 
-  def type; INT_OBJ end
+  def type; INTEGER_OBJ end
+  def to_s; @value.to_s end
+end
+
+class MonkeyBoolean
+  include MonkeyObject
+
+  attr_accessor :value
+
+  def initialize(value)
+    @value = value
+  end
+
+  def type; BOOLEAN_OBJ end
   def to_s; @value.to_s end
 end
 

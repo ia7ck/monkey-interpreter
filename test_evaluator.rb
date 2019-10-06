@@ -5,6 +5,13 @@ require "./evaluator"
 require "./parser"
 
 class TestEvaluator < Minitest::Test
+  def _eval(input)
+    pa = Parser.new(input)
+    program = pa.parse_program
+    env = Environment.new
+    Evaluator.evaluate(program, env)
+  end
+
   def test_eval_integer
     tests = [
       ["1;", 1],
@@ -16,22 +23,38 @@ class TestEvaluator < Minitest::Test
       ["12 * -3 / 9 - 1", -5],
       ["12 * (3 - 4) + 5;", -7],
     ]
-    tests.each do |input, want_value|
+    tests.each do |input, want|
       evaluated = self._eval(input)
-      self._test_integer_object(evaluated, want_value)
+      self._test_integer_object(want, evaluated)
     end
   end
 
-  def _eval(input)
-    pa = Parser.new(input)
-    program = pa.parse_program
-    env = Environment.new
-    Evaluator.evaluate(program, env)
+  def _test_integer_object(want, obj)
+    assert_equal(MonkeyInteger, obj.class)
+    assert_equal(want, obj.value)
   end
 
-  def _test_integer_object(obj, want_value)
-    assert_equal(MonkeyInteger, obj.class)
-    assert_equal(want_value, obj.value)
+  def test_eval_boolean
+    tests = [
+      ["true;", true],
+      ["false", false],
+      ["!false", true],
+      ["!0", false],
+      ["1 == 1", true],
+      ["1 != 1", false],
+      ["1 > 2", false],
+      ["false == false", true],
+      ["false != (true == false)", false],
+    ]
+    tests.each do |input, want|
+      evaluated = self._eval(input)
+      self._test_boolean_object(want, evaluated)
+    end
+  end
+
+  def _test_boolean_object(want, obj)
+    assert_equal(MonkeyBoolean, obj.class)
+    assert_equal(want, obj.value)
   end
 
   def test_let_statements
@@ -39,9 +62,9 @@ class TestEvaluator < Minitest::Test
       ["let a = 5; a;", 5],
       ["let a = 5; let b = a * 5;", 25],
     ]
-    tests.each do |input, want_value|
+    tests.each do |input, want|
       evaluated = self._eval(input)
-      self._test_integer_object(evaluated, want_value)
+      self._test_integer_object(want, evaluated)
     end
   end
 
@@ -61,7 +84,7 @@ class TestEvaluator < Minitest::Test
     ]
     tests.each do |input, want|
       evaluated = self._eval(input)
-      self._test_integer_object(evaluated, want)
+      self._test_integer_object(want, evaluated)
     end
   end
 
@@ -73,13 +96,11 @@ class TestEvaluator < Minitest::Test
       let add_two = new_adder(2)
       add_two(3);
     EOS
-    self._test_integer_object(self._eval(input), 5)
+    self._test_integer_object(5, self._eval(input))
   end
 
   def test_error_handling
     tests = [
-      ["!123", "unknown operator: !INTEGER"],
-      ["1 == 2;", "unknown operator: INTEGER==INTEGER"],
       ["foobar;", "identifier not found: foobar"],
       ["fn(x, y) {} (1)", "wrong number of arguments: expected 2, given 1"],
       ["let f = fn() {x * 2}; let x = 123; f();", "identifier not found: x"],

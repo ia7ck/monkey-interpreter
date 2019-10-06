@@ -5,6 +5,8 @@ class MonkeyLanguageError < StandardError; end
 
 module Evaluator
   NULL = MonkeyNull.new
+  TRUE = MonkeyBoolean.new(true)
+  FALSE = MonkeyBoolean.new(false)
 
   module_function
 
@@ -25,6 +27,7 @@ module Evaluator
       eval_infix_expression(node.operator, left_obj, right_obj)
     when Identifier; eval_identifier(node.value, env)
     when IntegerLiteral; MonkeyInteger.new(node.value)
+    when BooleanLiteral; native_bool_to_boolean_object(node.value)
     when FunctionLiteral; MonkeyFunction.new(node.parameters, node.body, env.deep_copy)
     when CallExpression
       function = evaluate(node.function, env)
@@ -33,6 +36,8 @@ module Evaluator
     else nil
     end
   end
+
+  def native_bool_to_boolean_object(b); b ? TRUE : FALSE end
 
   def eval_statements(stmts, env)
     result = nil
@@ -45,6 +50,7 @@ module Evaluator
   def eval_prefix_expression(operator, right_obj)
     case operator
     when "-"; eval_minus_prefix_operator_expression(right_obj)
+    when "!"; eval_bang_operator_expression(right_obj)
     else raise(MonkeyLanguageError, "unknown operator: #{operator}#{right_obj.type}")
     end
   end
@@ -57,9 +63,16 @@ module Evaluator
     end
   end
 
+  def eval_bang_operator_expression(obj)
+    (obj == NULL or obj == FALSE) ? TRUE : FALSE
+  end
+
   def eval_infix_expression(operator, left_obj, right_obj)
-    if [left_obj, right_obj].all? { |o| o.instance_of?(MonkeyInteger) }
+    case [left_obj, right_obj].map { |o| o.class }
+    when [MonkeyInteger, MonkeyInteger]
       eval_integer_infix_expression(operator, left_obj, right_obj)
+    when [MonkeyBoolean, MonkeyBoolean]
+      eval_boolean_infix_expression(operator, left_obj, right_obj)
     else
       raise(MonkeyLanguageError, "unknown operator: #{left_obj.type}#{operator}#{right_obj.type}")
     end
@@ -72,7 +85,21 @@ module Evaluator
     when "-"; MonkeyInteger.new(left_value - right_value)
     when "*"; MonkeyInteger.new(left_value * right_value)
     when "/"; MonkeyInteger.new(left_value / right_value)
-    else raise(MonkeyLanguageError, "unknown operator: #{left_obj.type}#{operator}#{right_obj.type}")
+    when "=="; native_bool_to_boolean_object(left_value == right_value)
+    when "!="; native_bool_to_boolean_object(left_value != right_value)
+    when "<"; native_bool_to_boolean_object(left_value < right_value)
+    when ">"; native_bool_to_boolean_object(left_value > right_value)
+    else
+      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type}#{operator}#{right_obj.type}")
+    end
+  end
+
+  def eval_boolean_infix_expression(operator, left_obj, right_obj)
+    case operator
+    when "=="; native_bool_to_boolean_object(left_obj == right_obj)
+    when "!="; native_bool_to_boolean_object(left_obj != right_obj)
+    else
+      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type}#{operator}#{right_obj.type}")
     end
   end
 

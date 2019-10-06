@@ -23,6 +23,8 @@ class Parser
     @prefix_parse_functions = [
       TokenType::IDENT,
       TokenType::INT,
+      TokenType::TRUE,
+      TokenType::FALSE,
       TokenType::MINUS,
       TokenType::BANG,
       TokenType::LPAR,
@@ -30,6 +32,8 @@ class Parser
     ].zip([
       :parse_identifier_expression,
       :parse_integer_literal_expression,
+      :parse_boolean_literal_expression,
+      :parse_boolean_literal_expression,
       :parse_prefix_expression,
       :parse_prefix_expression,
       :parse_grouped_expression,
@@ -182,6 +186,10 @@ class Parser
 
   def parse_integer_literal_expression
     IntegerLiteral.new(@cur_token, @cur_token.literal.to_i)
+  end
+
+  def parse_boolean_literal_expression
+    BooleanLiteral.new(@cur_token, self.current_token_type_is(TokenType::TRUE))
   end
 
   def parse_prefix_expression

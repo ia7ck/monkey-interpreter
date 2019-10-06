@@ -52,10 +52,20 @@ class TestParser < Minitest::Test
     self._test_literal_expression(123, stmt.expression)
   end
 
+  def test_parse_boolean_literal
+    input = "true; false"
+    pa = Parser.new(input)
+    program = pa.parse_program
+    assert_equal(2, program.statements.size)
+    self._test_literal_expression(true, program.statements[0].expression)
+    self._test_literal_expression(false, program.statements[1].expression)
+  end
+
   def _test_literal_expression(want, exp)
     case exp
-    when IntegerLiteral; self._test_integer_literal(want, exp)
     when Identifier; self._test_identifier(want, exp)
+    when IntegerLiteral; self._test_integer_literal(want, exp)
+    when BooleanLiteral; self._test_boolean_literal(want, exp)
     else assert(false, "type of exp not handled. got = #{exp}")
     end
   end
@@ -70,6 +80,12 @@ class TestParser < Minitest::Test
     assert_equal(Identifier, identifier.class)
     assert_equal(value, identifier.value)
     assert_equal(value, identifier.token_literal)
+  end
+
+  def _test_boolean_literal(value, boolean_literal)
+    assert_equal(BooleanLiteral, boolean_literal.class)
+    assert_equal(value, boolean_literal.value)
+    assert_equal(value.to_s, boolean_literal.token_literal)
   end
 
   def test_parse_function_literal
