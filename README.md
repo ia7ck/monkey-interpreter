@@ -44,18 +44,7 @@ null
 ```
 
 ### Function
-All functions are closure in Monkey language.
-
-```sh
-> let new_adder = fn(x) { fn(y) { x + y }; };
-> let add_two = new_adder(2);
-> add_two(3);
-5
-> let apply_func = fn(a, b, func) { func(a, b); };
-> apply_func(1, 23, fn(x, y) { x - y; });
--22
-```
-
+All functions are closure in Monkey language.  
 Closure is evaluated with specified environment: when the closure is defined.
 
 ```sh
@@ -63,11 +52,15 @@ Closure is evaluated with specified environment: when the closure is defined.
 > let double_x = fn() { x * 2; };
 > double_x();
 246
-> let x = 321;
-> double_x();
-246
 > let triple_y = fn() { y * 3; };
-> let y = -456;
+> let y = -45;
 > triple_y();
-identifier not found: y
+-90
+> let new_adder = fn(x) { fn(y) { x + y }; };
+> let add_two = new_adder(2);
+> add_two(3);
+5
+> let apply_func = fn(a, b, func) { func(a, b); };
+> apply_func(1, 23, fn(x, y) { x - y; });
+-22
 ```
