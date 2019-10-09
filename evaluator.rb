@@ -155,7 +155,8 @@ module Evaluator
       )
     end
     extended_env = extend_function_env(function, arguments)
-    return evaluate(function.body, extended_env)
+    evaluated = evaluate(function.body, extended_env)
+    unwrap_return_value(evaluated)
   end
 
   def extend_function_env(function, arguments)
@@ -164,5 +165,10 @@ module Evaluator
       env.set(param.value, arg)
     end
     return env
+  end
+
+  # fn() { fn() { return ooo } }
+  def unwrap_return_value(obj)
+    obj.instance_of?(MonkeyReturnValue) ? obj.value : obj
   end
 end

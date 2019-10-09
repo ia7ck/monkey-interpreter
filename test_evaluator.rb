@@ -133,7 +133,7 @@ class TestEvaluator < Minitest::Test
   def test_closure
     input = <<~EOS
       let new_adder = fn(x) {
-        fn(y) {x + y}
+        return fn(y) {x + y}
       }
       let add_two = new_adder(2)
       add_two(3);
