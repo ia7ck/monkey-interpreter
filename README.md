@@ -31,7 +31,7 @@ $ ruby repr.rb
 
 ### If-Else Expression
 ```sh
-> let a = if(1) { -1 } else { 2 };
+> let a = if (1) { -1 } else { 2 };
 > a;
 -1
 ```
@@ -39,8 +39,15 @@ $ ruby repr.rb
 You can use only `if` block (without `else`). In that case, NULL object `null` may appear.
 
 ```sh
-> if(123 < 45) { 6 };
+> if (123 < 45) { 6 };
 null
+```
+
+The only falsy values are `false` and `null`. 
+
+```sh
+> if (0) { 12 } else { 345 };
+12
 ```
 
 ### Function
@@ -56,7 +63,7 @@ Closure is evaluated with specified environment: when the closure is defined.
 > let y = -45;
 > triple_y();
 -90
-> let new_adder = fn(x) { fn(y) { x + y }; };
+> let new_adder = fn(x) { return fn(y) { x + y }; };
 > let add_two = new_adder(2);
 > add_two(3);
 5
@@ -64,3 +71,8 @@ Closure is evaluated with specified environment: when the closure is defined.
 > apply_func(1, 23, fn(x, y) { x - y; });
 -22
 ```
+
+#### Implicit Return
+Each of the following two functions returns same value `345`.
+- `fn() { 345; }`
+- `fn() { 12; return 345; 6; }`
