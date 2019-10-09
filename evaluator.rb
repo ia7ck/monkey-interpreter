@@ -17,10 +17,6 @@ module Evaluator
     when LetStatement
       value = evaluate(node.value, env)
       env.set(node.name.value, value) # node.name は Identifier
-      if value.instance_of?(MonkeyFunction)
-        value.env.set(node.name.value, value) # 再帰関数のために必要
-      end
-      return value
     when ReturnStatement
       value = evaluate(node.return_value, env)
       MonkeyReturnValue.new(value)
@@ -38,7 +34,7 @@ module Evaluator
     when IfExpression
       condition = evaluate(node.condition, env)
       eval_if_else_expression(condition, node.consequence, node.alternative, env)
-    when FunctionLiteral; MonkeyFunction.new(node.parameters, node.body, env.deep_copy)
+    when FunctionLiteral; MonkeyFunction.new(node.parameters, node.body, env)
     when CallExpression
       function = evaluate(node.function, env)
       arguments = eval_expressions(node.arguments, env)
