@@ -116,6 +116,18 @@ class BooleanLiteral < Expression
   def to_str; @token.literal end
 end
 
+class StringLiteral < Expression
+  attr_accessor :token, :value
+
+  def initialize(token, value)
+    @token = token
+    @value = value
+  end
+
+  def token_literal; @token.literal end
+  def to_str; @token.literal end
+end
+
 class IfExpression < Expression
   attr_accessor :condition, :consequence, :alternative
 

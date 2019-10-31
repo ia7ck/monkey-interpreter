@@ -80,6 +80,7 @@ class Lexer
     when ->(c) { c.digit? }
       integer = self.read_integer
       return Token.new(TokenType::INT, integer)
+    when '"'; t = Token.new(TokenType::STRING, self.read_string)
     when "$"; t = Token.new(TokenType::EOF, "$")
     else t = Token.new(TokenType::ILLEGAL, "ILLEGAL")
     end
@@ -107,5 +108,14 @@ class Lexer
       self.read_char
     end
     return @input[left...@pos] # [left, @pos)
+  end
+
+  def read_string
+    self.read_char # "
+    left = @pos
+    while @char != '"' and @char != "$"
+      self.read_char
+    end
+    return @input[left...@pos]
   end
 end

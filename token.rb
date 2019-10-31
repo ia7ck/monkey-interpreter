@@ -23,6 +23,7 @@ module TokenType
   LBRACE = "{"
   RBRACE = "}"
 
+  STRING = "STRING"
   FUNCTION = "FUNCTION" # fn
   LET = "LET" # let
   TRUE = "TRUE"

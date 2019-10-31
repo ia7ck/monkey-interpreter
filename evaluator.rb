@@ -31,6 +31,7 @@ module Evaluator
     when Identifier; eval_identifier(node.value, env)
     when IntegerLiteral; MonkeyInteger.new(node.value)
     when BooleanLiteral; native_bool_to_boolean_object(node.value)
+    when StringLiteral; MonkeyString.new(node.value)
     when IfExpression
       condition = evaluate(node.condition, env)
       eval_if_else_expression(condition, node.consequence, node.alternative, env)
@@ -93,8 +94,10 @@ module Evaluator
       eval_integer_infix_expression(operator, left_obj, right_obj)
     when [MonkeyBoolean, MonkeyBoolean]
       eval_boolean_infix_expression(operator, left_obj, right_obj)
+    when [MonkeyString, MonkeyString]
+      eval_string_infix_expression(operator, left_obj, right_obj)
     else
-      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type}#{operator}#{right_obj.type}")
+      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
     end
   end
 
@@ -110,7 +113,7 @@ module Evaluator
     when "<"; native_bool_to_boolean_object(left_value < right_value)
     when ">"; native_bool_to_boolean_object(left_value > right_value)
     else
-      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type}#{operator}#{right_obj.type}")
+      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
     end
   end
 
@@ -119,7 +122,16 @@ module Evaluator
     when "=="; native_bool_to_boolean_object(left_obj == right_obj)
     when "!="; native_bool_to_boolean_object(left_obj != right_obj)
     else
-      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type}#{operator}#{right_obj.type}")
+      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
+    end
+  end
+
+  def eval_string_infix_expression(operator, left_obj, right_obj)
+    left_value, right_value = left_obj.value, right_obj.value
+    case operator
+    when "+"; MonkeyString.new(left_value + right_value)
+    else
+      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
     end
   end
 

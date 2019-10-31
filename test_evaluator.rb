@@ -57,6 +57,23 @@ class TestEvaluator < Minitest::Test
     assert_equal(want, obj.value)
   end
 
+  def test_eval_string
+    tests = [
+      ['"abc"', "abc"],
+      ['"a bc"', "a bc"],
+      ['"ab " + "c"', "ab c"],
+    ]
+    tests.each do |input, want|
+      evaluated = self._eval(input)
+      self._test_string_object(want, evaluated)
+    end
+  end
+
+  def _test_string_object(want, obj)
+    assert_equal(MonkeyString, obj.class)
+    assert_equal(want, obj.value)
+  end
+
   def test_if_else_expressions
     tests = [
       ["if (true) {10}", 10],
@@ -145,6 +162,7 @@ class TestEvaluator < Minitest::Test
     tests = [
       ["foobar;", "identifier not found: foobar"],
       ["fn(x, y) {} (1)", "wrong number of arguments: expected 2, given 1"],
+      ['"x" - "yz"', "unknown operator: STRING - STRING"],
     ]
     tests.each do |input, want_message|
       err = assert_raises(MonkeyLanguageError) do

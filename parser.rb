@@ -25,6 +25,7 @@ class Parser
       TokenType::INT,
       TokenType::TRUE,
       TokenType::FALSE,
+      TokenType::STRING,
       TokenType::IF,
       TokenType::MINUS,
       TokenType::BANG,
@@ -35,6 +36,7 @@ class Parser
       :parse_integer_literal_expression,
       :parse_boolean_literal_expression,
       :parse_boolean_literal_expression,
+      :parse_string_literal_expression,
       :parse_if_expression,
       :parse_prefix_expression,
       :parse_prefix_expression,
@@ -203,6 +205,10 @@ class Parser
 
   def parse_boolean_literal_expression
     BooleanLiteral.new(@cur_token, self.current_token_type_is(TokenType::TRUE))
+  end
+
+  def parse_string_literal_expression
+    StringLiteral.new(@cur_token, @cur_token.literal)
   end
 
   def parse_if_expression

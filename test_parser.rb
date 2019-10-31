@@ -71,31 +71,47 @@ class TestParser < Minitest::Test
     self._test_literal_expression(false, program.statements[1].expression)
   end
 
+  def test_parse_string_literal_expression
+    input = '"ab cde"'
+    pa = Parser.new(input)
+    program = pa.parse_program
+    stmt = program.statements[0]
+    self._test_literal_expression("ab cde", stmt.expression)
+  end
+
   def _test_literal_expression(want, exp)
     case exp
     when Identifier; self._test_identifier(want, exp)
     when IntegerLiteral; self._test_integer_literal(want, exp)
     when BooleanLiteral; self._test_boolean_literal(want, exp)
+    when StringLiteral; self._test_string_literal(want, exp)
     else assert(false, "type of exp not handled. got = #{exp}")
     end
   end
 
+  
+  def _test_identifier(value, identifier)
+    assert_equal(Identifier, identifier.class)
+    assert_equal(value, identifier.value)
+    assert_equal(value, identifier.token_literal)
+  end
+  
   def _test_integer_literal(value, integer_literal)
     assert_equal(IntegerLiteral, integer_literal.class)
     assert_equal(value, integer_literal.value)
     assert_equal(value.to_s, integer_literal.token_literal)
   end
 
-  def _test_identifier(value, identifier)
-    assert_equal(Identifier, identifier.class)
-    assert_equal(value, identifier.value)
-    assert_equal(value, identifier.token_literal)
-  end
-
   def _test_boolean_literal(value, boolean_literal)
     assert_equal(BooleanLiteral, boolean_literal.class)
     assert_equal(value, boolean_literal.value)
     assert_equal(value.to_s, boolean_literal.token_literal)
+  end
+
+  def _test_string_literal(value, string_literal)
+    assert_equal(StringLiteral, string_literal.class)
+    assert_equal(value, string_literal.value)
+    assert_equal(value.to_s, string_literal.token_literal)
   end
 
   def test_if_expression
