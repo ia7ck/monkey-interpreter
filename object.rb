@@ -4,6 +4,7 @@ module MonkeyObject
   STRING_OBJ = "STRING"
   RETURN_VALUE_OBJ = "RETURN_VALUE"
   FUNCTION_OBJ = "FUNCTION"
+  ARRAY_OBJ = "ARRAY"
   NULL_OBJ = "NULL"
 
   def type
@@ -82,6 +83,18 @@ class MonkeyFunction
       }
     EOS
   end
+end
+
+class MonkeyArray
+  include MonkeyObject
+  attr_accessor :elements
+
+  def initialize(elems)
+    @elements = elems
+  end
+
+  def type; ARRAY_OBJ end
+  def to_s; "[#{@elements.join(", ")}]" end
 end
 
 class MonkeyNull

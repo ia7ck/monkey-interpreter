@@ -158,11 +158,38 @@ class TestEvaluator < Minitest::Test
     self._test_integer_object(5, self._eval(input))
   end
 
+  def test_array_literals
+    input = "[1, 2 * 3]"
+    evaluated = self._eval(input)
+    assert_equal(2, evaluated.elements.size)
+    _test_integer_object(1, evaluated.elements[0])
+    _test_integer_object(6, evaluated.elements[1])
+  end
+
+  def test_array_index_expression
+    tests = [
+      ["[1, 2, 3][0]", 1],
+      ["[4, 5, 6][3 - 2]", 5],
+      ["[7, 8][9]", nil],
+      ["[10][-3]", nil],
+    ]
+    tests.each do |input, want|
+      evaluated = self._eval(input)
+      if want
+        self._test_integer_object(want, evaluated)
+      else
+        self._test_null_object(evaluated)
+      end
+    end
+  end
+
   def test_error_handling
     tests = [
       ["foobar;", "identifier not found: foobar"],
       ["fn(x, y) {} (1)", "wrong number of arguments: expected 2, given 1"],
       ['"x" - "yz"', "unknown operator: STRING - STRING"],
+      ["(1 + 2)[3]", "index operator not supported INTEGER"],
+      ["[1, 2][true]", "index type must be INTEGER"],
     ]
     tests.each do |input, want_message|
       err = assert_raises(MonkeyLanguageError) do

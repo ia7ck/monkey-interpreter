@@ -74,6 +74,8 @@ class Lexer
     when ")"; t = Token.new(TokenType::RPAR, ")")
     when "{"; t = Token.new(TokenType::LBRACE, "{")
     when "}"; t = Token.new(TokenType::RBRACE, "}")
+    when "["; t = Token.new(TokenType::LBRACKET, "[")
+    when "]"; t = Token.new(TokenType::RBRACKET, "]")
     when ->(c) { c.alpha? }
       ident = self.read_identifier
       return Token.new(TokenType::lookup_identifier(ident), ident)

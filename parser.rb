@@ -10,6 +10,7 @@ module Precedence
   PRODUCT = 123456 # *, /
   PREFIX = 1234567 # -XXX, !XXX
   CALL = 123456789
+  INDEX = 1234567890
 end
 
 class Parser
@@ -30,6 +31,7 @@ class Parser
       TokenType::MINUS,
       TokenType::BANG,
       TokenType::LPAR,
+      TokenType::LBRACKET,
       TokenType::FUNCTION,
     ].zip([
       :parse_identifier_expression,
@@ -41,6 +43,7 @@ class Parser
       :parse_prefix_expression,
       :parse_prefix_expression,
       :parse_grouped_expression,
+      :parse_array_literal,
       :parse_function_literal,
     ].map { |name| self.method(name) }).to_h
     @infix_parse_functions = ([
@@ -56,6 +59,7 @@ class Parser
       self.method(:parse_infix_expression),
     ]) + [
       [TokenType::LPAR, self.method(:parse_call_expression)],
+      [TokenType::LBRACKET, self.method(:parse_index_expression)],
     ]).to_h
     @precedences = [
       TokenType::EQUAL,
@@ -67,6 +71,7 @@ class Parser
       TokenType::ASTERISK,
       TokenType::SLASH,
       TokenType::LPAR,
+      TokenType::LBRACKET,
     ].zip([
       Precedence::EQUALS,
       Precedence::EQUALS,
@@ -77,6 +82,7 @@ class Parser
       Precedence::PRODUCT,
       Precedence::PRODUCT,
       Precedence::CALL,
+      Precedence::INDEX,
     ]).to_h
   end
 
@@ -275,19 +281,37 @@ class Parser
   end
 
   def parse_call_expression(function)
-    CallExpression.new(function, self.parse_call_arguments)
+    CallExpression.new(function, self.parse_expression_list(@cur_token.type, TokenType::RPAR))
   end
 
-  def parse_call_arguments # (a + b, -c, ...)
-    arguments = []
-    self.expect_current_token_type_is(TokenType::LPAR)
-    self.advance_cursor # (
-    while not self.current_token_type_is(TokenType::RPAR)
+  def parse_array_literal
+    ArrayLiteral.new(@cur_token, self.parse_expression_list(@cur_token.type, TokenType::RBRACKET))
+  end
+
+  def parse_expression_list(begin_token, end_token)
+    exp_list = []
+    self.expect_current_token_type_is(begin_token)
+    self.advance_cursor # ( or [
+    while not self.current_token_type_is(TokenType::EOF)
+      break if self.current_token_type_is(end_token) # ) or ]
       if not self.current_token_type_is(TokenType::COMMA)
-        arguments.push(self.parse_expression(Precedence::LOWEST))
+        exp_list.push(self.parse_expression(Precedence::LOWEST))
       end
-      self.advance_cursor
+      self.advance_cursor # ,
     end
-    return arguments
+    if not self.current_token_type_is(end_token)
+      return nil
+    end
+    return exp_list
+  end
+
+  def parse_index_expression(left)
+    ie = IndexExpression.new(@cur_token, left)
+    self.advance_cursor # [
+    ie.index = self.parse_expression(Precedence::LOWEST)
+    if not self.expect_next_token_type_is(TokenType::RBRACKET)
+      return nil
+    end
+    return ie
   end
 end

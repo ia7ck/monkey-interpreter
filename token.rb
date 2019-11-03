@@ -22,6 +22,8 @@ module TokenType
   RPAR = ")"
   LBRACE = "{"
   RBRACE = "}"
+  LBRACKET = "["
+  RBRACKET = "]"
 
   STRING = "STRING"
   FUNCTION = "FUNCTION" # fn

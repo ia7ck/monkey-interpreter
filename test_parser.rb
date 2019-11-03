@@ -89,13 +89,12 @@ class TestParser < Minitest::Test
     end
   end
 
-  
   def _test_identifier(value, identifier)
     assert_equal(Identifier, identifier.class)
     assert_equal(value, identifier.value)
     assert_equal(value, identifier.token_literal)
   end
-  
+
   def _test_integer_literal(value, integer_literal)
     assert_equal(IntegerLiteral, integer_literal.class)
     assert_equal(value, integer_literal.value)
@@ -244,6 +243,23 @@ class TestParser < Minitest::Test
     end
   end
 
+  def test_parse_array_literals
+    tests = [
+      ["[x + 1, -y, g(x, y)]", ["(x + 1)", "(-y)", "g(x, y)"]],
+    ]
+    tests.each do |input, wants|
+      pa = Parser.new(input)
+      program = pa.parse_program
+      stmt = program.statements[0]
+      exp = stmt.expression
+      elems = exp.elements
+      assert_equal(wants.size, elems.size)
+      wants.zip(elems).each do |want, elem|
+        assert_equal(want, elem.to_str)
+      end
+    end
+  end
+
   def test_operator_precedence
     tests = [
       [
@@ -256,6 +272,8 @@ class TestParser < Minitest::Test
       ["1 < 2 == 3 > 4", "((1 < 2) == (3 > 4))"],
       ["let p = q + -r;", "let p = (q + (-r))"],
       ["a + add(b * c)  - d", "((a + add((b * c))) - d)"],
+      ["a * [1, 2][3 * 4] * b", "((a * ([1, 2][(3 * 4)])) * b)"],
+      ["5 * [4, 3, 2][1] * 0", "((5 * ([4, 3, 2][1])) * 0)"],
     ]
     tests.each do |input, output|
       pa = Parser.new(input)

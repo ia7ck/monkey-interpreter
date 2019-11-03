@@ -40,6 +40,11 @@ module Evaluator
       function = evaluate(node.function, env)
       arguments = eval_expressions(node.arguments, env)
       apply_function(function, arguments)
+    when ArrayLiteral; MonkeyArray.new(eval_expressions(node.elements, env))
+    when IndexExpression
+      left = evaluate(node.left, env)
+      index = evaluate(node.index, env)
+      eval_index_expression(left, index)
     else nil
     end
   end
@@ -182,5 +187,27 @@ module Evaluator
   # fn() { fn() { return ooo } }
   def unwrap_return_value(obj)
     obj.instance_of?(MonkeyReturnValue) ? obj.value : obj
+  end
+
+  def eval_index_expression(left, index)
+    case [left.class, index.class]
+    when [MonkeyArray, MonkeyInteger]
+      eval_array_index_expression(left, index)
+    else
+      if not left.instance_of?(MonkeyArray)
+        raise(MonkeyLanguageError, "index operator not supported #{left.type}")
+      else # not index.instance_of?(MonkeyInteger)
+        raise(MonkeyLanguageError, "index type must be INTEGER")
+      end
+    end
+  end
+
+  def eval_array_index_expression(array, index)
+    elems, i = array.elements, index.value
+    if i.between?(0, elems.size - 1)
+      elems[i]
+    else
+      NULL
+    end
   end
 end

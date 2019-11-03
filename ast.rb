@@ -205,3 +205,28 @@ class CallExpression < Expression
   def token_literal; @token.literal end
   def to_str; "#{@function.to_str}(#{@arguments.join(", ")})" end
 end
+
+class ArrayLiteral < Expression
+  attr_accessor :token, :elements
+
+  def initialize(token, elems)
+    @token = token
+    @elements = elems
+  end
+
+  def token_literal; @token.literal end
+  def to_str; "[#{@elements.join(", ")}]" end
+end
+
+class IndexExpression < Expression
+  attr_accessor :token, :left, :index
+
+  def initialize(token, left)
+    @token = token # [
+    @left = left
+    @index = nil
+  end
+
+  def token_literal; @token.literal end
+  def to_str; "(#{@left.to_str}[#{@index.to_str}])" end
+end
