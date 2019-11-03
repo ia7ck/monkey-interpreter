@@ -192,7 +192,7 @@ class TestEvaluator < Minitest::Test
       ["[1, 2][true]", "index type must be INTEGER"],
     ]
     tests.each do |input, want_message|
-      err = assert_raises(MonkeyLanguageError) do
+      err = assert_raises(MonkeyLanguageEvaluateError) do
         self._eval(input)
       end
       assert_equal(want_message, err.message)

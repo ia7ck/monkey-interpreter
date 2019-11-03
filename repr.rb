@@ -7,10 +7,15 @@ while true
   line = gets
   break if line.nil?
   pa = Parser.new(line)
-  program = pa.parse_program
+  begin
+    program = pa.parse_program
+  rescue MonkeyLanguageParseError => err
+    puts err
+    next
+  end
   begin
     evaluated = Evaluator.evaluate(program, env)
-  rescue MonkeyLanguageError => err
+  rescue MonkeyLanguageEvaluateError => err
     puts err
     next
   end

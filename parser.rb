@@ -2,6 +2,8 @@ require "./token"
 require "./lexer"
 require "./ast"
 
+class MonkeyLanguageParseError < StandardError; end
+
 module Precedence
   LOWEST = 1
   EQUALS = 123
@@ -101,13 +103,13 @@ class Parser
 
   def expect_current_token_type_is(token_type)
     if @cur_token.type != token_type
-      raise "got: #{@cur_token.type}, want: #{token_type}"
+      raise(MonkeyLanguageParseError, "expected token is: #{token_type}, got: #{@cur_token.type}")
     end
   end
 
   def expect_next_token_type_is(token_type)
     if @nxt_token.type != token_type
-      raise "got: #{@cur_token.type}, want: #{token_type}"
+      raise(MonkeyLanguageParseError, "expected next token is: #{token_type}, got: #{@nxt_token.type}")
     end
     self.advance_cursor
   end
@@ -187,7 +189,13 @@ class Parser
   # 1 * (2 - 3) + 4
   def parse_expression(precedence)
     prefix = @prefix_parse_functions[@cur_token.type]
-    raise "not found prefix parse function for #{@cur_token.type}" if prefix.nil?
+    if prefix.nil?
+      raise(
+        MonkeyLanguageParseError,
+        ["unexpected token: #{@cur_token.type}",
+         "not found prefix parse function for #{@cur_token.type}"].join("\n")
+      )
+    end
     left_expression = prefix.call
     while (not self.next_token_type_is(TokenType::SEMICOLON)) and
           precedence < self.next_token_precedence
@@ -292,16 +300,17 @@ class Parser
     exp_list = []
     self.expect_current_token_type_is(begin_token)
     self.advance_cursor # ( or [
-    while not self.current_token_type_is(TokenType::EOF)
-      break if self.current_token_type_is(end_token) # ) or ]
-      if not self.current_token_type_is(TokenType::COMMA)
-        exp_list.push(self.parse_expression(Precedence::LOWEST))
-      end
+    if self.current_token_type_is(end_token)
+      self.advance_cursor
+      return exp_list
+    end
+    exp_list.push(self.parse_expression(Precedence::LOWEST))
+    while self.next_token_type_is(TokenType::COMMA)
+      self.advance_cursor # exp
       self.advance_cursor # ,
+      exp_list.push(self.parse_expression(Precedence::LOWEST))
     end
-    if not self.current_token_type_is(end_token)
-      return nil
-    end
+    self.expect_next_token_type_is(end_token)
     return exp_list
   end
 

@@ -83,7 +83,7 @@ class Lexer
       integer = self.read_integer
       return Token.new(TokenType::INT, integer)
     when '"'; t = Token.new(TokenType::STRING, self.read_string)
-    when "$"; t = Token.new(TokenType::EOF, "$")
+    when "$"; t = Token.new(TokenType::EOF, "EOF")
     else t = Token.new(TokenType::ILLEGAL, "ILLEGAL")
     end
     self.read_char

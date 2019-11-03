@@ -60,7 +60,7 @@ class TestLexer < Minitest::Test
       [TokenType::COMMA, ","],
       [TokenType::TRUE, "true"],
       [TokenType::RBRACKET, "]"],
-      [TokenType::EOF, "$"],
+      [TokenType::EOF, "EOF"],
     ]
     tests.each do |t, l|
       token = le.read_token

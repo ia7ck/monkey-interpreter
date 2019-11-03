@@ -34,7 +34,7 @@ module TokenType
   ELSE = "ELSE"
   RETURN = "RETURN"
 
-  EOF = "$" # eof の代わり
+  EOF = "EOF"
 
   @keywords = {
     fn: TokenType::FUNCTION,

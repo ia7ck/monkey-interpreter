@@ -1,7 +1,7 @@
 require "./ast"
 require "./object"
 
-class MonkeyLanguageError < StandardError; end
+class MonkeyLanguageEvaluateError < StandardError; end
 
 module Evaluator
   NULL = MonkeyNull.new
@@ -77,7 +77,7 @@ module Evaluator
     case operator
     when "-"; eval_minus_prefix_operator_expression(right_obj)
     when "!"; eval_bang_operator_expression(right_obj)
-    else raise(MonkeyLanguageError, "unknown operator: #{operator}#{right_obj.type}")
+    else raise(MonkeyLanguageEvaluateError, "unknown operator: #{operator}#{right_obj.type}")
     end
   end
 
@@ -85,7 +85,7 @@ module Evaluator
     if obj.instance_of?(MonkeyInteger)
       MonkeyInteger.new(obj.value * (-1))
     else
-      raise(MonkeyLanguageError, "unknown operator: -#{obj.type}")
+      raise(MonkeyLanguageEvaluateError, "unknown operator: -#{obj.type}")
     end
   end
 
@@ -102,7 +102,7 @@ module Evaluator
     when [MonkeyString, MonkeyString]
       eval_string_infix_expression(operator, left_obj, right_obj)
     else
-      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
+      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
     end
   end
 
@@ -118,7 +118,7 @@ module Evaluator
     when "<"; native_bool_to_boolean_object(left_value < right_value)
     when ">"; native_bool_to_boolean_object(left_value > right_value)
     else
-      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
+      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
     end
   end
 
@@ -127,7 +127,7 @@ module Evaluator
     when "=="; native_bool_to_boolean_object(left_obj == right_obj)
     when "!="; native_bool_to_boolean_object(left_obj != right_obj)
     else
-      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
+      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
     end
   end
 
@@ -136,13 +136,13 @@ module Evaluator
     case operator
     when "+"; MonkeyString.new(left_value + right_value)
     else
-      raise(MonkeyLanguageError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
+      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
     end
   end
 
   def eval_identifier(name, env)
     value = env.get(name)
-    raise(MonkeyLanguageError, "identifier not found: #{name}") if value.nil?
+    raise(MonkeyLanguageEvaluateError, "identifier not found: #{name}") if value.nil?
     return value
   end
 
@@ -167,7 +167,7 @@ module Evaluator
   def apply_function(function, arguments)
     if function.parameters.size != arguments.size
       raise(
-        MonkeyLanguageError,
+        MonkeyLanguageEvaluateError,
         "wrong number of arguments: expected #{function.parameters.size}, given #{arguments.size}"
       )
     end
@@ -195,9 +195,9 @@ module Evaluator
       eval_array_index_expression(left, index)
     else
       if not left.instance_of?(MonkeyArray)
-        raise(MonkeyLanguageError, "index operator not supported #{left.type}")
+        raise(MonkeyLanguageEvaluateError, "index operator not supported #{left.type}")
       else # not index.instance_of?(MonkeyInteger)
-        raise(MonkeyLanguageError, "index type must be INTEGER")
+        raise(MonkeyLanguageEvaluateError, "index type must be INTEGER")
       end
     end
   end
