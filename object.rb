@@ -7,6 +7,7 @@ module MonkeyObject
   ARRAY_OBJ = "ARRAY"
   HASH_OBJ = "HASH"
   NULL_OBJ = "NULL"
+  BUILTIN_OBJ = "BUILTIN"
 
   def type
     raise NotImplementedError
@@ -156,6 +157,18 @@ class MonkeyNull
 
   def type; NULL_OBJ end
   def to_s; "null" end
+end
+
+class MonkeyBuiltin
+  include MonkeyObject
+  attr_accessor :func
+
+  def initialize(func)
+    @func = func
+  end
+
+  def type; BUILTIN_OBJ end
+  def to_s; "builtin function" end
 end
 
 # environment

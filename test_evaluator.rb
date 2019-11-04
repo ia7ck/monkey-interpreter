@@ -232,12 +232,27 @@ class TestEvaluator < Minitest::Test
       ["[1, 2][true]", "index type must be INTEGER"],
       ["{[1, 2, 3]: 4}", "unuseable as hash key: ARRAY"],
       ["{123: 4}[fn(x){x}]", "unuseable as hash key: FUNCTION"],
+      ["let f = 1; f(2, 3);", "not a function: INTEGER"],
+      ['len("a", "bc")', "wrong number of arguments: expected 1, given 2"],
+      ["len(123)", "argument to `len` not supported, got INTEGER"],
     ]
     tests.each do |input, want_message|
       err = assert_raises(MonkeyLanguageEvaluateError) do
         _eval(input)
       end
       assert_equal(want_message, err.message)
+    end
+  end
+
+  def test_builtin_functions
+    tests = [
+      ['len("a bc")', 4],
+      ['len("")', 0],
+      ["len([-1, 1])", 2],
+    ]
+    tests.each do |input, want|
+      evaluated = _eval(input)
+      _test_integer_object(want, evaluated)
     end
   end
 end

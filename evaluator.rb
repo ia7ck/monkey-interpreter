@@ -8,6 +8,26 @@ module Evaluator
   TRUE = MonkeyBoolean.new(true)
   FALSE = MonkeyBoolean.new(false)
 
+  Builtin = {
+    "len" => MonkeyBuiltin.new(lambda { |*args|
+      if args.size != 1
+        raise(
+          MonkeyLanguageEvaluateError,
+          "wrong number of arguments: expected 1, given #{args.size}"
+        )
+      end
+      a = args[0]
+      case a
+      when MonkeyString
+        MonkeyInteger.new(a.value.size)
+      when MonkeyArray
+        MonkeyInteger.new(a.elements.size)
+      else
+        raise(MonkeyLanguageEvaluateError, "argument to `len` not supported, got #{a.type}")
+      end
+    }),
+  }
+
   module_function
 
   def evaluate(node, env)
@@ -143,8 +163,14 @@ module Evaluator
 
   def eval_identifier(name, env)
     value = env.get(name)
-    raise(MonkeyLanguageEvaluateError, "identifier not found: #{name}") if value.nil?
-    return value
+    if value
+      return value
+    end
+    value = Builtin[name]
+    if value
+      return value
+    end
+    raise(MonkeyLanguageEvaluateError, "identifier not found: #{name}")
   end
 
   def eval_if_else_expression(condition, consequence, alternative, env)
@@ -165,16 +191,23 @@ module Evaluator
     arguments.map { |arg| evaluate(arg, env) }
   end
 
-  def apply_function(function, arguments)
-    if function.parameters.size != arguments.size
-      raise(
-        MonkeyLanguageEvaluateError,
-        "wrong number of arguments: expected #{function.parameters.size}, given #{arguments.size}"
-      )
+  def apply_function(func, args)
+    case func
+    when MonkeyFunction
+      if func.parameters.size != args.size
+        raise(
+          MonkeyLanguageEvaluateError,
+          "wrong number of arguments: expected #{func.parameters.size}, given #{args.size}"
+        )
+      end
+      extended_env = extend_function_env(func, args)
+      evaluated = evaluate(func.body, extended_env)
+      return unwrap_return_value(evaluated)
+    when MonkeyBuiltin
+      return func.func.call(*args)
+    else
+      raise(MonkeyLanguageEvaluateError, "not a function: #{func.type}")
     end
-    extended_env = extend_function_env(function, arguments)
-    evaluated = evaluate(function.body, extended_env)
-    unwrap_return_value(evaluated)
   end
 
   def extend_function_env(function, arguments)
