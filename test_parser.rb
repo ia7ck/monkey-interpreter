@@ -246,6 +246,7 @@ class TestParser < Minitest::Test
   def test_parse_array_literals
     tests = [
       ["[x + 1, -y, g(x, y)]", ["(x + 1)", "(-y)", "g(x, y)"]],
+      ["[1, []]", ["1", "[]"]],
     ]
     tests.each do |input, wants|
       pa = Parser.new(input)

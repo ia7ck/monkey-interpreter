@@ -301,7 +301,6 @@ class Parser
     self.expect_current_token_type_is(begin_token)
     self.advance_cursor # ( or [
     if self.current_token_type_is(end_token)
-      self.advance_cursor
       return exp_list
     end
     exp_list.push(self.parse_expression(Precedence::LOWEST))
