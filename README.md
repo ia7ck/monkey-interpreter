@@ -62,7 +62,7 @@ Closure is evaluated with specified environment: when the closure is defined.
 > let triple_y = fn() { y * 3; };
 > let y = -45;
 > triple_y();
--90
+-135
 > let new_adder = fn(x) { return fn(y) { x + y }; };
 > let add_two = new_adder(2);
 > add_two(3);
@@ -76,3 +76,44 @@ Closure is evaluated with specified environment: when the closure is defined.
 Each of the following two functions returns same value `345`.
 - `fn() { 345; }`
 - `fn() { 12; return 345; 6; }`
+
+### String
+```sh
+> let s = "hello,"
+> len(s)
+6
+> s + " world!"
+hello, world!
+```
+
+### Array
+```sh
+> let a = [1, 3, 5]
+> len(a)
+3
+> a[2]
+5
+> a[3]
+null
+> push(a, 7)
+[1, 3, 5, 7]
+> rest(push(a, 7))
+[3, 5, 7]
+```
+
+### Hash
+```sh
+> let h = {"k": "v", 123: [4, 5]}
+> h["k"]
+v
+> h[123][0]
+4
+```
+
+Each of
+
+- String
+- Integer
+- Bool
+
+object can be used as hash key.
