@@ -24,8 +24,8 @@ class TestEvaluator < Minitest::Test
       ["12 * (3 - 4) + 5;", -7],
     ]
     tests.each do |input, want|
-      evaluated = self._eval(input)
-      self._test_integer_object(want, evaluated)
+      evaluated = _eval(input)
+      _test_integer_object(want, evaluated)
     end
   end
 
@@ -47,8 +47,8 @@ class TestEvaluator < Minitest::Test
       ["false != (true == false)", false],
     ]
     tests.each do |input, want|
-      evaluated = self._eval(input)
-      self._test_boolean_object(want, evaluated)
+      evaluated = _eval(input)
+      _test_boolean_object(want, evaluated)
     end
   end
 
@@ -64,8 +64,8 @@ class TestEvaluator < Minitest::Test
       ['"ab " + "c"', "ab c"],
     ]
     tests.each do |input, want|
-      evaluated = self._eval(input)
-      self._test_string_object(want, evaluated)
+      evaluated = _eval(input)
+      _test_string_object(want, evaluated)
     end
   end
 
@@ -82,11 +82,11 @@ class TestEvaluator < Minitest::Test
       ["if (1 > 2) {34} else {5}", 5],
     ]
     tests.each do |input, want|
-      evaluated = self._eval(input)
+      evaluated = _eval(input)
       if want
-        self._test_integer_object(want, evaluated)
+        _test_integer_object(want, evaluated)
       else
-        self._test_null_object(evaluated)
+        _test_null_object(evaluated)
       end
     end
   end
@@ -101,8 +101,8 @@ class TestEvaluator < Minitest::Test
       ["let a = 5; let b = a * 5;", 25],
     ]
     tests.each do |input, want|
-      evaluated = self._eval(input)
-      self._test_integer_object(want, evaluated)
+      evaluated = _eval(input)
+      _test_integer_object(want, evaluated)
     end
   end
 
@@ -120,14 +120,14 @@ class TestEvaluator < Minitest::Test
        4],
     ]
     tests.each do |input, want|
-      evaluated = self._eval(input)
-      self._test_integer_object(want, evaluated)
+      evaluated = _eval(input)
+      _test_integer_object(want, evaluated)
     end
   end
 
   def test_function_object
     input = "fn(x) { x + 2; }"
-    evaluated = self._eval(input)
+    evaluated = _eval(input)
     assert_equal(1, evaluated.parameters.size)
     assert_equal("x", evaluated.parameters[0].to_str)
     assert_equal("(x + 2)", evaluated.body.to_str)
@@ -142,8 +142,8 @@ class TestEvaluator < Minitest::Test
       ["let fact = fn(n) {if (n == 0) {1} else {n * fact(n - 1)}}; fact(4);", 24],
     ]
     tests.each do |input, want|
-      evaluated = self._eval(input)
-      self._test_integer_object(want, evaluated)
+      evaluated = _eval(input)
+      _test_integer_object(want, evaluated)
     end
   end
 
@@ -155,12 +155,12 @@ class TestEvaluator < Minitest::Test
       let add_two = new_adder(2)
       add_two(3);
     EOS
-    self._test_integer_object(5, self._eval(input))
+    _test_integer_object(5, _eval(input))
   end
 
   def test_array_literals
     input = "[1, 2 * 3]"
-    evaluated = self._eval(input)
+    evaluated = _eval(input)
     assert_equal(2, evaluated.elements.size)
     _test_integer_object(1, evaluated.elements[0])
     _test_integer_object(6, evaluated.elements[1])
@@ -174,11 +174,11 @@ class TestEvaluator < Minitest::Test
       ["[10][-3]", nil],
     ]
     tests.each do |input, want|
-      evaluated = self._eval(input)
+      evaluated = _eval(input)
       if want
-        self._test_integer_object(want, evaluated)
+        _test_integer_object(want, evaluated)
       else
-        self._test_null_object(evaluated)
+        _test_null_object(evaluated)
       end
     end
   end
@@ -193,7 +193,7 @@ class TestEvaluator < Minitest::Test
     ]
     tests.each do |input, want_message|
       err = assert_raises(MonkeyLanguageEvaluateError) do
-        self._eval(input)
+        _eval(input)
       end
       assert_equal(want_message, err.message)
     end

@@ -20,8 +20,8 @@ class Parser
     @le = Lexer.new(input)
     @cur_token = nil
     @nxt_token = nil
-    self.advance_cursor
-    self.advance_cursor
+    advance_cursor
+    advance_cursor
     # https://docs.ruby-lang.org/ja/2.2.0/class/Method.html
     @prefix_parse_functions = [
       TokenType::IDENT,
@@ -47,7 +47,7 @@ class Parser
       :parse_grouped_expression,
       :parse_array_literal,
       :parse_function_literal,
-    ].map { |name| self.method(name) }).to_h
+    ].map { |name| method(name) }).to_h
     @infix_parse_functions = ([
       TokenType::EQUAL,
       TokenType::NOT_EQUAL,
@@ -58,10 +58,10 @@ class Parser
       TokenType::ASTERISK,
       TokenType::SLASH,
     ].product([
-      self.method(:parse_infix_expression),
+      method(:parse_infix_expression),
     ]) + [
-      [TokenType::LPAR, self.method(:parse_call_expression)],
-      [TokenType::LBRACKET, self.method(:parse_index_expression)],
+      [TokenType::LPAR, method(:parse_call_expression)],
+      [TokenType::LBRACKET, method(:parse_index_expression)],
     ]).to_h
     @precedences = [
       TokenType::EQUAL,
@@ -111,7 +111,7 @@ class Parser
     if @nxt_token.type != token_type
       raise(MonkeyLanguageParseError, "expected next token is: #{token_type}, got: #{@nxt_token.type}")
     end
-    self.advance_cursor
+    advance_cursor
   end
 
   def current_token_precedence
@@ -124,64 +124,64 @@ class Parser
 
   def parse_program
     program = Program.new
-    while not self.current_token_type_is(TokenType::EOF)
-      stmt = self.parse_statement
+    while not current_token_type_is(TokenType::EOF)
+      stmt = parse_statement
       raise if stmt.nil?
       program.statements.push(stmt)
-      self.advance_cursor
+      advance_cursor
     end
     return program
   end
 
   def parse_block_statement
-    self.advance_cursor # {
+    advance_cursor # {
     block_stmt = BlockStatement.new
-    while (not self.current_token_type_is(TokenType::EOF)) and
-          (not self.current_token_type_is(TokenType::RBRACE))
-      stmt = self.parse_statement
+    while (not current_token_type_is(TokenType::EOF)) and
+          (not current_token_type_is(TokenType::RBRACE))
+      stmt = parse_statement
       raise if stmt.nil?
       block_stmt.statements.push(stmt)
-      self.advance_cursor
+      advance_cursor
     end
     return block_stmt
   end
 
   def parse_statement
     case @cur_token.type
-    when TokenType::LET; self.parse_let_statement
-    when TokenType::RETURN; self.parse_return_statement
-    else self.parse_expression_statement
+    when TokenType::LET; parse_let_statement
+    when TokenType::RETURN; parse_return_statement
+    else parse_expression_statement
     end
   end
 
   def parse_let_statement
     let_stmt = LetStatement.new
-    self.expect_next_token_type_is(TokenType::IDENT)
+    expect_next_token_type_is(TokenType::IDENT)
     let_stmt.name = Identifier.new(@cur_token, @cur_token.literal)
-    self.expect_next_token_type_is(TokenType::ASSIGN)
-    self.advance_cursor
-    let_stmt.value = self.parse_expression(Precedence::LOWEST)
-    if self.next_token_type_is(TokenType::SEMICOLON)
-      self.advance_cursor
+    expect_next_token_type_is(TokenType::ASSIGN)
+    advance_cursor
+    let_stmt.value = parse_expression(Precedence::LOWEST)
+    if next_token_type_is(TokenType::SEMICOLON)
+      advance_cursor
     end
     return let_stmt
   end
 
   def parse_return_statement
     ret_stmt = ReturnStatement.new
-    self.advance_cursor # return
-    ret_stmt.return_value = self.parse_expression(Precedence::LOWEST)
-    if self.next_token_type_is(TokenType::SEMICOLON)
-      self.advance_cursor
+    advance_cursor # return
+    ret_stmt.return_value = parse_expression(Precedence::LOWEST)
+    if next_token_type_is(TokenType::SEMICOLON)
+      advance_cursor
     end
     return ret_stmt
   end
 
   def parse_expression_statement
     stmt = ExpressionStatement.new(@cur_token)
-    stmt.expression = self.parse_expression(Precedence::LOWEST)
-    if self.next_token_type_is(TokenType::SEMICOLON)
-      self.advance_cursor
+    stmt.expression = parse_expression(Precedence::LOWEST)
+    if next_token_type_is(TokenType::SEMICOLON)
+      advance_cursor
     end
     return stmt
   end
@@ -197,13 +197,13 @@ class Parser
       )
     end
     left_expression = prefix.call
-    while (not self.next_token_type_is(TokenType::SEMICOLON)) and
-          precedence < self.next_token_precedence
+    while (not next_token_type_is(TokenType::SEMICOLON)) and
+          precedence < next_token_precedence
       infix = @infix_parse_functions[@nxt_token.type]
       if infix.nil?
         return left_expression
       end
-      self.advance_cursor
+      advance_cursor
       left_expression = infix.call(left_expression)
     end
     return left_expression
@@ -218,7 +218,7 @@ class Parser
   end
 
   def parse_boolean_literal_expression
-    BooleanLiteral.new(@cur_token, self.current_token_type_is(TokenType::TRUE))
+    BooleanLiteral.new(@cur_token, current_token_type_is(TokenType::TRUE))
   end
 
   def parse_string_literal_expression
@@ -227,97 +227,97 @@ class Parser
 
   def parse_if_expression
     ie = IfExpression.new
-    self.expect_next_token_type_is(TokenType::LPAR)
-    ie.condition = self.parse_expression(Precedence::LOWEST)
-    self.expect_current_token_type_is(TokenType::RPAR)
-    self.expect_next_token_type_is(TokenType::LBRACE)
-    ie.consequence = self.parse_block_statement
-    self.expect_current_token_type_is(TokenType::RBRACE)
-    if self.next_token_type_is(TokenType::ELSE)
-      self.advance_cursor # else
-      self.expect_next_token_type_is(TokenType::LBRACE)
-      ie.alternative = self.parse_block_statement
+    expect_next_token_type_is(TokenType::LPAR)
+    ie.condition = parse_expression(Precedence::LOWEST)
+    expect_current_token_type_is(TokenType::RPAR)
+    expect_next_token_type_is(TokenType::LBRACE)
+    ie.consequence = parse_block_statement
+    expect_current_token_type_is(TokenType::RBRACE)
+    if next_token_type_is(TokenType::ELSE)
+      advance_cursor # else
+      expect_next_token_type_is(TokenType::LBRACE)
+      ie.alternative = parse_block_statement
     end
     return ie
   end
 
   def parse_prefix_expression
     expression = PrefixExpression.new(@cur_token, @cur_token.literal)
-    self.advance_cursor
-    expression.right_expression = self.parse_expression(Precedence::PREFIX)
+    advance_cursor
+    expression.right_expression = parse_expression(Precedence::PREFIX)
     return expression
   end
 
   def parse_grouped_expression # (...)
-    self.advance_cursor # (
-    exp = self.parse_expression(Precedence::LOWEST)
-    self.expect_next_token_type_is(TokenType::RPAR)
+    advance_cursor # (
+    exp = parse_expression(Precedence::LOWEST)
+    expect_next_token_type_is(TokenType::RPAR)
     return exp
   end
 
   def parse_function_literal # fn(a, b, ...) { ... }
     fl = FunctionLiteral.new
-    self.expect_next_token_type_is(TokenType::LPAR)
-    fl.parameters = self.parse_function_parameters
-    self.expect_current_token_type_is(TokenType::RPAR)
-    self.expect_next_token_type_is(TokenType::LBRACE)
-    fl.body = self.parse_block_statement
-    self.expect_current_token_type_is(TokenType::RBRACE)
+    expect_next_token_type_is(TokenType::LPAR)
+    fl.parameters = parse_function_parameters
+    expect_current_token_type_is(TokenType::RPAR)
+    expect_next_token_type_is(TokenType::LBRACE)
+    fl.body = parse_block_statement
+    expect_current_token_type_is(TokenType::RBRACE)
     return fl
   end
 
   def parse_function_parameters # (a, b, ...) { ... }
     identifiers = []
-    self.advance_cursor # (
-    while not self.current_token_type_is(TokenType::RPAR)
-      if self.current_token_type_is(TokenType::IDENT)
+    advance_cursor # (
+    while not current_token_type_is(TokenType::RPAR)
+      if current_token_type_is(TokenType::IDENT)
         identifiers.push(Identifier.new(@cur_token, @cur_token.literal))
       else
-        self.expect_current_token_type_is(TokenType::COMMA)
+        expect_current_token_type_is(TokenType::COMMA)
       end
-      self.advance_cursor
+      advance_cursor
     end
     return identifiers
   end
 
   def parse_infix_expression(left_expression)
     expression = InfixExpression.new(@cur_token, left_expression, @cur_token.literal)
-    precedence = self.current_token_precedence
-    self.advance_cursor
-    expression.right_expression = self.parse_expression(precedence)
+    precedence = current_token_precedence
+    advance_cursor
+    expression.right_expression = parse_expression(precedence)
     return expression
   end
 
   def parse_call_expression(function)
-    CallExpression.new(function, self.parse_expression_list(@cur_token.type, TokenType::RPAR))
+    CallExpression.new(function, parse_expression_list(@cur_token.type, TokenType::RPAR))
   end
 
   def parse_array_literal
-    ArrayLiteral.new(@cur_token, self.parse_expression_list(@cur_token.type, TokenType::RBRACKET))
+    ArrayLiteral.new(@cur_token, parse_expression_list(@cur_token.type, TokenType::RBRACKET))
   end
 
   def parse_expression_list(begin_token, end_token)
     exp_list = []
-    self.expect_current_token_type_is(begin_token)
-    self.advance_cursor # ( or [
-    if self.current_token_type_is(end_token)
+    expect_current_token_type_is(begin_token)
+    advance_cursor # ( or [
+    if current_token_type_is(end_token)
       return exp_list
     end
-    exp_list.push(self.parse_expression(Precedence::LOWEST))
-    while self.next_token_type_is(TokenType::COMMA)
-      self.advance_cursor # exp
-      self.advance_cursor # ,
-      exp_list.push(self.parse_expression(Precedence::LOWEST))
+    exp_list.push(parse_expression(Precedence::LOWEST))
+    while next_token_type_is(TokenType::COMMA)
+      advance_cursor # exp
+      advance_cursor # ,
+      exp_list.push(parse_expression(Precedence::LOWEST))
     end
-    self.expect_next_token_type_is(end_token)
+    expect_next_token_type_is(end_token)
     return exp_list
   end
 
   def parse_index_expression(left)
     ie = IndexExpression.new(@cur_token, left)
-    self.advance_cursor # [
-    ie.index = self.parse_expression(Precedence::LOWEST)
-    if not self.expect_next_token_type_is(TokenType::RBRACKET)
+    advance_cursor # [
+    ie.index = parse_expression(Precedence::LOWEST)
+    if not expect_next_token_type_is(TokenType::RBRACKET)
       return nil
     end
     return ie
