@@ -22,6 +22,14 @@ class TestParser < Minitest::Test
     end
   end
 
+  def _parse_single_statement_program(input)
+    pa = Parser.new(input)
+    program = pa.parse_program
+    assert(program)
+    assert_equal(1, program.statements.size)
+    return program.statements[0]
+  end
+
   def _test_let_statement(stmt, name, value)
     assert_equal("let", stmt.token_literal)
     assert_equal(name, stmt.name.token_literal)
@@ -40,11 +48,7 @@ class TestParser < Minitest::Test
 
   def test_parse_identifier_expression
     input = "foobar;"
-    pa = Parser.new(input)
-    program = pa.parse_program
-    assert(program)
-    assert_equal(1, program.statements.size)
-    stmt = program.statements[0]
+    stmt = _parse_single_statement_program(input)
     assert_equal(ExpressionStatement, stmt.class)
     assert(stmt.token)
     self._test_literal_expression("foobar", stmt.expression)
@@ -52,11 +56,7 @@ class TestParser < Minitest::Test
 
   def test_parse_integer_literal_expression
     input = "123;"
-    pa = Parser.new(input)
-    program = pa.parse_program
-    assert(program)
-    assert_equal(1, program.statements.size)
-    stmt = program.statements[0]
+    stmt = _parse_single_statement_program(input)
     assert_equal(ExpressionStatement, stmt.class)
     assert(stmt.token)
     self._test_literal_expression(123, stmt.expression)
@@ -115,9 +115,8 @@ class TestParser < Minitest::Test
 
   def test_if_expression
     input = "if (x < y) {x};"
-    pa = Parser.new(input)
-    program = pa.parse_program
-    exp = program.statements[0].expression
+    stmt = _parse_single_statement_program(input)
+    exp = stmt.expression
     self._test_infix_expression("x", "<", "y", exp.condition)
     assert_equal(1, exp.consequence.statements.size)
     self._test_identifier("x", exp.consequence.statements[0].expression)
@@ -126,19 +125,14 @@ class TestParser < Minitest::Test
 
   def test_if_else_expression
     input = "if (x < y) {x} else {y}"
-    pa = Parser.new(input)
-    program = pa.parse_program
-    alt = program.statements[0].expression.alternative
+    stmt = _parse_single_statement_program(input)
+    alt = stmt.expression.alternative
     self._test_identifier("y", alt.statements[0].expression)
   end
 
   def test_parse_function_literal
     input = "fn(x, y) { x + y; };"
-    pa = Parser.new(input)
-    program = pa.parse_program
-    assert(program)
-    assert_equal(1, program.statements.size)
-    stmt = program.statements[0]
+    stmt = _parse_single_statement_program(input)
     assert_equal(FunctionLiteral, stmt.expression.class)
     fl = stmt.expression
     assert_equal(2, fl.parameters.size)
@@ -155,9 +149,7 @@ class TestParser < Minitest::Test
       ["fn(x, y, z) {}", ["x", "y", "z"]],
     ]
     tests.each do |input, wants|
-      pa = Parser.new(input)
-      program = pa.parse_program
-      stmt = program.statements[0]
+      stmt = _parse_single_statement_program(input)
       fl = stmt.expression
       params = fl.parameters
       assert_equal(wants.size, params.size)
@@ -173,10 +165,7 @@ class TestParser < Minitest::Test
       ["-88;", "-", 88],
     ]
     tests.each do |input, operator, integer_value|
-      pa = Parser.new(input)
-      program = pa.parse_program
-      assert_equal(1, program.statements.size)
-      stmt = program.statements[0]
+      stmt = _parse_single_statement_program(input)
       assert_equal(ExpressionStatement, stmt.class)
       exp = stmt.expression
       assert(exp)
@@ -192,10 +181,7 @@ class TestParser < Minitest::Test
       ["1 < 23;", 1, "<", 23],
     ]
     tests.each do |input, left_value, operator, right_value|
-      pa = Parser.new(input)
-      program = pa.parse_program
-      assert_equal(1, program.statements.size)
-      stmt = program.statements[0]
+      stmt = _parse_single_statement_program(input)
       assert_equal(ExpressionStatement, stmt.class)
       exp = stmt.expression
       assert(exp)
@@ -212,9 +198,7 @@ class TestParser < Minitest::Test
 
   def test_parse_call_expression
     input = "add(a, 2 * 3, 4 + 5);"
-    pa = Parser.new(input)
-    program = pa.parse_program
-    stmt = program.statements[0]
+    stmt = _parse_single_statement_program(input)
     exp = stmt.expression
     self._test_literal_expression("add", exp.function)
     args = exp.arguments
@@ -231,9 +215,7 @@ class TestParser < Minitest::Test
       ["f(x + 1, -y, g(x, y))", ["(x + 1)", "(-y)", "g(x, y)"]],
     ]
     tests.each do |input, wants|
-      pa = Parser.new(input)
-      program = pa.parse_program
-      stmt = program.statements[0]
+      stmt = _parse_single_statement_program(input)
       exp = stmt.expression
       args = exp.arguments
       assert_equal(wants.size, args.size)
@@ -249,9 +231,7 @@ class TestParser < Minitest::Test
       ["[1, []]", ["1", "[]"]],
     ]
     tests.each do |input, wants|
-      pa = Parser.new(input)
-      program = pa.parse_program
-      stmt = program.statements[0]
+      stmt = _parse_single_statement_program(input)
       exp = stmt.expression
       elems = exp.elements
       assert_equal(wants.size, elems.size)
