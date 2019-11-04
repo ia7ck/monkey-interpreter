@@ -16,6 +16,7 @@ module TokenType
   GT = ">"
 
   COMMA = ","
+  COLON = ":"
   SEMICOLON = ";"
 
   LPAR = "("

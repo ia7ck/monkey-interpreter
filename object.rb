@@ -5,6 +5,7 @@ module MonkeyObject
   RETURN_VALUE_OBJ = "RETURN_VALUE"
   FUNCTION_OBJ = "FUNCTION"
   ARRAY_OBJ = "ARRAY"
+  HASH_OBJ = "HASH"
   NULL_OBJ = "NULL"
 
   def type
@@ -16,12 +17,25 @@ module MonkeyObject
   end
 end
 
+module MonkeyHashable
+  def hash_key
+    raise NotImplementedError
+  end
+end
+
 class MonkeyInteger
-  include MonkeyObject
+  include MonkeyObject, MonkeyHashable
   attr_accessor :value
 
   def initialize(value)
     @value = value
+  end
+
+  def hash; @value.hash end
+  def hash_key; hash end
+
+  def eql?(other)
+    other.instance_of?(MonkeyInteger) and @value == other.value
   end
 
   def type; INTEGER_OBJ end
@@ -29,11 +43,18 @@ class MonkeyInteger
 end
 
 class MonkeyBoolean
-  include MonkeyObject
+  include MonkeyObject, MonkeyHashable
   attr_accessor :value
 
   def initialize(value)
     @value = value
+  end
+
+  def hash; @value.hash end
+  def hash_key; hash end
+
+  def eql?(other)
+    other.instance_of?(MonkeyBoolean) and @value == other.value
   end
 
   def type; BOOLEAN_OBJ end
@@ -41,11 +62,18 @@ class MonkeyBoolean
 end
 
 class MonkeyString
-  include MonkeyObject
+  include MonkeyObject, MonkeyHashable
   attr_accessor :value
 
   def initialize(value)
     @value = value
+  end
+
+  def hash; @value.hash end
+  def hash_key; hash end
+
+  def eql?(other)
+    other.instance_of?(MonkeyString) and @value == other.value
   end
 
   def type; STRING_OBJ end
@@ -95,6 +123,32 @@ class MonkeyArray
 
   def type; ARRAY_OBJ end
   def to_s; "[#{@elements.join(", ")}]" end
+end
+
+class HashPair
+  attr_accessor :key, :value
+
+  def initialize(key, value)
+    @key = key
+    @value = value
+  end
+
+  def to_s; @key.to_s + ": " + @value.to_s end
+end
+
+class MonkeyHash
+  include MonkeyObject
+  attr_accessor :pairs
+
+  def initialize(pairs)
+    @pairs = pairs
+  end
+
+  def type; HASH_OBJ end
+
+  def to_s
+    "{" + @pairs.values.map { |pair| pair.to_s }.join(", ") + "}"
+  end
 end
 
 class MonkeyNull

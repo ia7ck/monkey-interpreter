@@ -13,6 +13,7 @@ class TestLexer < Minitest::Test
       if (true == false) {1} else { return 0 }
       "a bc"
       [1, true]
+      {"key": "value"}
     EOS
     le = Lexer.new(input)
     tests = [
@@ -60,6 +61,11 @@ class TestLexer < Minitest::Test
       [TokenType::COMMA, ","],
       [TokenType::TRUE, "true"],
       [TokenType::RBRACKET, "]"],
+      [TokenType::LBRACE, "{"],
+      [TokenType::STRING, "key"],
+      [TokenType::COLON, ":"],
+      [TokenType::STRING, "value"],
+      [TokenType::RBRACE, "}"],
       [TokenType::EOF, "EOF"],
     ]
     tests.each do |t, l|

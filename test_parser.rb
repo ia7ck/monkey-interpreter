@@ -241,6 +241,35 @@ class TestParser < Minitest::Test
     end
   end
 
+  def test_parse_hash_literals_string_keys
+    input = '{"k1": 1, "k2": 2, "k3": "3"}'
+    want = { "k1" => 1, "k2" => 2, "k3" => "3" }
+    stmt = _parse_single_statement_program(input)
+    exp = stmt.expression
+    exp.pairs.each do |k, v|
+      _test_literal_expression(want[k.to_str], v)
+    end
+  end
+
+  def test_parse_empty_hash_literal
+    input = "{}"
+    stmt = _parse_single_statement_program(input)
+    assert_equal(0, stmt.expression.pairs.size)
+  end
+
+  def test_parse_hash_literal_with_expressions
+    input = '{"k1": 1 + 2, "k2": 3 / 4}'
+    stmt = _parse_single_statement_program(input)
+    test_funcs = {
+      "k1" => lambda { |exp| _test_infix_expression(1, "+", 2, exp) },
+      "k2" => lambda { |exp| _test_infix_expression(3, "/", 4, exp) },
+    }
+    stmt.expression.pairs.each do |k, v|
+      f = test_funcs[k.to_str]
+      f.call(v)
+    end
+  end
+
   def test_operator_precedence
     tests = [
       [

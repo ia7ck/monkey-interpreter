@@ -33,6 +33,7 @@ class Parser
       TokenType::MINUS,
       TokenType::BANG,
       TokenType::LPAR,
+      TokenType::LBRACE,
       TokenType::LBRACKET,
       TokenType::FUNCTION,
     ].zip([
@@ -45,6 +46,7 @@ class Parser
       :parse_prefix_expression,
       :parse_prefix_expression,
       :parse_grouped_expression,
+      :parse_hash_literal,
       :parse_array_literal,
       :parse_function_literal,
     ].map { |name| method(name) }).to_h
@@ -321,5 +323,31 @@ class Parser
       return nil
     end
     return ie
+  end
+
+  def parse_hash_literal
+    h = HashLiteral.new(@cur_token, {})
+    advance_cursor # {
+    if current_token_type_is(TokenType::RBRACE)
+      return h
+    end
+    k, v = parse_key_value_pair
+    h.pairs[k] = v
+    while next_token_type_is(TokenType::COMMA)
+      advance_cursor # value
+      advance_cursor # ,
+      k, v = parse_key_value_pair
+      h.pairs[k] = v
+    end
+    expect_next_token_type_is(TokenType::RBRACE)
+    return h
+  end
+
+  def parse_key_value_pair # key : value
+    k = parse_expression(Precedence::LOWEST)
+    expect_next_token_type_is(TokenType::COLON)
+    advance_cursor # :
+    v = parse_expression(Precedence::LOWEST)
+    return k, v
   end
 end

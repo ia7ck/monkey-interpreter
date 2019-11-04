@@ -230,3 +230,22 @@ class IndexExpression < Expression
   def token_literal; @token.literal end
   def to_str; "(#{@left.to_str}[#{@index.to_str}])" end
 end
+
+class HashLiteral < Expression
+  attr_accessor :token, :pairs
+
+  def initialize(token, pairs)
+    @token = token
+    @pairs = pairs
+  end
+
+  def token_literal; @token.literal end
+
+  def to_str
+    "{" +
+      @pairs.map { |k, v|
+        k.to_str + ":" + v.to_str
+      }.join(", ") +
+    "}"
+  end
+end

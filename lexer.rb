@@ -69,6 +69,7 @@ class Lexer
     when "<"; t = Token.new(TokenType::LT, "<")
     when ">"; t = Token.new(TokenType::GT, ">")
     when ","; t = Token.new(TokenType::COMMA, ",")
+    when ":"; t = Token.new(TokenType::COLON, ":")
     when ";"; t = Token.new(TokenType::SEMICOLON, ";")
     when "("; t = Token.new(TokenType::LPAR, "(")
     when ")"; t = Token.new(TokenType::RPAR, ")")

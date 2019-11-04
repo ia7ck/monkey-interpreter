@@ -183,6 +183,46 @@ class TestEvaluator < Minitest::Test
     end
   end
 
+  def test_hash_literals
+    input = '{
+      "a": 1,
+      "b": 1 + 1,
+      "c": 6 / 2,
+      4: 4,
+      true: 5,
+      false: 6
+    }'
+    wants = {
+      MonkeyString.new("a") => 1,
+      MonkeyString.new("b") => 2,
+      MonkeyString.new("c") => 3,
+      MonkeyInteger.new(4) => 4,
+      MonkeyBoolean.new(true) => 5,
+      MonkeyBoolean.new(false) => 6,
+    }
+    evaluated = _eval(input)
+    wants.each do |k, v|
+      _test_integer_object(v, evaluated.pairs[k].value)
+    end
+  end
+
+  def test_hash_index_expressions
+    tests = [
+      ['{"a": 1}["a"]', 1],
+      ['{"a": 1}["b"]', nil],
+      ['let k = "c"; {"c": 2}[k]', 2],
+      ["{}[0]", nil],
+    ]
+    tests.each do |input, want|
+      evaluated = _eval(input)
+      if want
+        _test_integer_object(want, evaluated)
+      else
+        _test_null_object(evaluated)
+      end
+    end
+  end
+
   def test_error_handling
     tests = [
       ["foobar;", "identifier not found: foobar"],
@@ -190,6 +230,8 @@ class TestEvaluator < Minitest::Test
       ['"x" - "yz"', "unknown operator: STRING - STRING"],
       ["(1 + 2)[3]", "index operator not supported INTEGER"],
       ["[1, 2][true]", "index type must be INTEGER"],
+      ["{[1, 2, 3]: 4}", "unuseable as hash key: ARRAY"],
+      ["{123: 4}[fn(x){x}]", "unuseable as hash key: FUNCTION"],
     ]
     tests.each do |input, want_message|
       err = assert_raises(MonkeyLanguageEvaluateError) do

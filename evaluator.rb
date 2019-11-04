@@ -45,6 +45,7 @@ module Evaluator
       left = evaluate(node.left, env)
       index = evaluate(node.index, env)
       eval_index_expression(left, index)
+    when HashLiteral; eval_hash_literal(node, env)
     else nil
     end
   end
@@ -190,24 +191,49 @@ module Evaluator
   end
 
   def eval_index_expression(left, index)
-    case [left.class, index.class]
-    when [MonkeyArray, MonkeyInteger]
+    case left
+    when MonkeyArray
       eval_array_index_expression(left, index)
+    when MonkeyHash
+      eval_hash_index_expression(left, index)
     else
-      if not left.instance_of?(MonkeyArray)
-        raise(MonkeyLanguageEvaluateError, "index operator not supported #{left.type}")
-      else # not index.instance_of?(MonkeyInteger)
-        raise(MonkeyLanguageEvaluateError, "index type must be INTEGER")
-      end
+      raise(MonkeyLanguageEvaluateError, "index operator not supported #{left.type}")
     end
   end
 
   def eval_array_index_expression(array, index)
+    if not index.instance_of?(MonkeyInteger)
+      raise(MonkeyLanguageEvaluateError, "index type must be INTEGER")
+    end
     elems, i = array.elements, index.value
     if i.between?(0, elems.size - 1)
       elems[i]
     else
       NULL
     end
+  end
+
+  def eval_hash_literal(node, env)
+    h = MonkeyHash.new({})
+    node.pairs.each do |kn, vn|
+      k = evaluate(kn, env)
+      if not k.kind_of?(MonkeyHashable)
+        raise(MonkeyLanguageEvaluateError, "unuseable as hash key: #{k.type}")
+      end
+      v = evaluate(vn, env)
+      h.pairs[k] = HashPair.new(k, v)
+    end
+    return h
+  end
+
+  def eval_hash_index_expression(h, k)
+    if not k.kind_of?(MonkeyHashable)
+      raise(MonkeyLanguageEvaluateError, "unuseable as hash key: #{k.type}")
+    end
+    v = h.pairs[k]
+    if v.nil?
+      return NULL
+    end
+    return v.value
   end
 end
