@@ -26,6 +26,41 @@ module Evaluator
         raise(MonkeyLanguageEvaluateError, "argument to `len` not supported, got #{a.type}")
       end
     }),
+    "rest" => MonkeyBuiltin.new(lambda { |*args|
+      if args.size != 1
+        raise(
+          MonkeyLanguageEvaluateError,
+          "wrong number of arguments: expected 1, given #{args.size}"
+        )
+      end
+      arr = args[0]
+      if not arr.instance_of?(MonkeyArray)
+        raise(MonkeyLanguageEvaluateError, "argument to `rest` must be ARRAY, got #{arr.type}")
+      end
+      elems = arr.elements[1..-1]
+      if elems
+        MonkeyArray.new(elems)
+      else
+        NULL
+      end
+    }),
+    "push" => MonkeyBuiltin.new(lambda { |*args|
+      if args.size != 2
+        raise(
+          MonkeyLanguageEvaluateError,
+          "wrong number of arguments: expected 2, given #{args.size}"
+        )
+      end
+      arr = args[0]
+      if not arr.instance_of?(MonkeyArray)
+        raise(MonkeyLanguageEvaluateError, "argument to `push` must be ARRAY, got #{arr.type}")
+      end
+      return MonkeyArray.new(arr.elements + [args[1]])
+    }),
+    "puts" => MonkeyBuiltin.new(lambda { |*args|
+      puts args.map { |arg| arg.to_s }.join("\n")
+      return NULL
+    }),
   }
 
   module_function

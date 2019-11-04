@@ -245,6 +245,7 @@ class TestEvaluator < Minitest::Test
   end
 
   def test_builtin_functions
+    # len
     tests = [
       ['len("a bc")', 4],
       ['len("")', 0],
@@ -253,6 +254,32 @@ class TestEvaluator < Minitest::Test
     tests.each do |input, want|
       evaluated = _eval(input)
       _test_integer_object(want, evaluated)
+    end
+    # rest
+    tests = [
+      ["rest([1, 2, 3])", [2, 3]],
+      ["rest(rest([1, 2, 3]))", [3]],
+      ["rest(rest(rest([1, 2, 3])))", []],
+    ]
+    tests.each do |input, wants|
+      evaluated = _eval(input)
+      wants.zip(evaluated.elements).each do |want, got|
+        _test_integer_object(want, got)
+      end
+    end
+    input = "rest([])"
+    evaluated = _eval(input)
+    assert_instance_of(MonkeyNull, evaluated)
+    # push
+    tests = [
+      ["push([1, 2], 3)", [1, 2, 3]],
+      ["push([], 1)", [1]],
+    ]
+    tests.each do |input, wants|
+      evaluated = _eval(input)
+      wants.zip(evaluated.elements).each do |want, got|
+        _test_integer_object(want, got)
+      end
     end
   end
 end
