@@ -284,6 +284,9 @@ class TestParser < Minitest::Test
       ["a + add(b * c)  - d", "((a + add((b * c))) - d)"],
       ["a * [1, 2][3 * 4] * b", "((a * ([1, 2][(3 * 4)])) * b)"],
       ["5 * [4, 3, 2][1] * 0", "((5 * ([4, 3, 2][1])) * 0)"],
+      ["-g(1, 2) + 3", "((-g(1, 2)) + 3)"],
+      ["h(12)[3]", "(h(12)[3])"],
+      ["funcs[1](2, 3)", "(funcs[1])(2, 3)"],
     ]
     tests.each do |input, output|
       pa = Parser.new(input)
