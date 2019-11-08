@@ -1,8 +1,7 @@
 require "minitest/autorun"
 
-require File.expand_path("../../lib/monkey-interpreter", __FILE__)
-require "token"
-require "lexer"
+require_relative "../lib/token"
+require_relative "../lib/lexer"
 
 class TestLexer < Minitest::Test
   def test_read_token

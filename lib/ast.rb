@@ -1,4 +1,4 @@
-require "token"
+require_relative "token"
 
 module Node
   def token_literal

@@ -1,7 +1,5 @@
-$LOAD_PATH.push(__dir__)
-
-require "evaluator"
-require "parser"
+require_relative "evaluator"
+require_relative "parser"
 
 env = Environment.new
 while true

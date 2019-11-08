@@ -1,5 +1,5 @@
-require "ast"
-require "object"
+require_relative "ast"
+require_relative "object"
 
 class MonkeyLanguageEvaluateError < StandardError; end
 

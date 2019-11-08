@@ -1,4 +1,4 @@
-require "token"
+require_relative "token"
 
 class String
   def alpha?

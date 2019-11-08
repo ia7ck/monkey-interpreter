@@ -1,6 +1,6 @@
-require "token"
-require "lexer"
-require "ast"
+require_relative "token"
+require_relative "lexer"
+require_relative "ast"
 
 class MonkeyLanguageParseError < StandardError; end
 
