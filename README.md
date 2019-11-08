@@ -4,12 +4,12 @@ Monkey is a programming language designed for [Writing An Interpreter In Go](htt
 - Run all
     - `$ rake test`
 - Run each file
-    - `$ rake test TEST=test_xxx.rb`
-    - e.g. `$ rake test TEST=test_lexer.rb`
+    - `$ rake test TEST=test/test_xxx.rb`
+    - e.g. `$ rake test TEST=test/test_lexer.rb`
 
 ## REPL
 ```sh
-$ ruby repr.rb
+$ ruby lib/repr.rb
 > 
 ```
 
