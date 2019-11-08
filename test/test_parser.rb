@@ -272,10 +272,8 @@ class TestParser < Minitest::Test
 
   def test_operator_precedence
     tests = [
-      [
-        "1 + 2 + x; a+b",
-        "((1 + 2) + x) (a + b)",
-      ],
+      ["1 + 2 * x", "(1 + (2 * x))"],
+      ["1 * 2 + x", "((1 * 2) + x)"],
       ["1 * (2 + x);", "(1 * (2 + x))"],
       ["-a*b", "((-a) * b)"],
       ["!-a", "(!(-a))"],
