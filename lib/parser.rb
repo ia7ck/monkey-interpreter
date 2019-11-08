@@ -1,6 +1,6 @@
-require "./token"
-require "./lexer"
-require "./ast"
+require "token"
+require "lexer"
+require "ast"
 
 class MonkeyLanguageParseError < StandardError; end
 

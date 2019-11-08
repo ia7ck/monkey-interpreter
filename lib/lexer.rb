@@ -1,4 +1,4 @@
-require "./token"
+require "token"
 
 class String
   def alpha?

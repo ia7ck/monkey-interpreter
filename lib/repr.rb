@@ -1,5 +1,7 @@
-require "./evaluator"
-require "./parser"
+$LOAD_PATH.push(__dir__)
+
+require "evaluator"
+require "parser"
 
 env = Environment.new
 while true

@@ -1,8 +1,9 @@
 require "minitest/autorun"
 
-require "./ast"
-require "./evaluator"
-require "./parser"
+require File.expand_path("../../lib/monkey-interpreter", __FILE__)
+require "ast"
+require "evaluator"
+require "parser"
 
 class TestEvaluator < Minitest::Test
   def _eval(input)

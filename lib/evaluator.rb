@@ -1,5 +1,5 @@
-require "./ast"
-require "./object"
+require "ast"
+require "object"
 
 class MonkeyLanguageEvaluateError < StandardError; end
 
