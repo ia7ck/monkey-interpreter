@@ -16,6 +16,7 @@ module TokenType
   GT = ">"
 
   COMMA = ","
+  DOT = "."
   COLON = ":"
   SEMICOLON = ";"
 
@@ -28,6 +29,7 @@ module TokenType
 
   STRING = "STRING"
   FUNCTION = "FUNCTION" # fn
+  STRUCT = "STRUCT"
   LET = "LET" # let
   TRUE = "TRUE"
   FALSE = "FALSE"
@@ -39,6 +41,7 @@ module TokenType
 
   @keywords = {
     fn: TokenType::FUNCTION,
+    struct: TokenType::STRUCT,
     let: TokenType::LET,
     true: TokenType::TRUE,
     false: TokenType::FALSE,

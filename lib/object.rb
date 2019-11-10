@@ -6,6 +6,8 @@ module MonkeyObject
   FUNCTION_OBJ = "FUNCTION"
   ARRAY_OBJ = "ARRAY"
   HASH_OBJ = "HASH"
+  STRUCT_OBJ = "STRUCT"
+  INSTANCE_OBJ = "INSTANCE"
   NULL_OBJ = "NULL"
   BUILTIN_OBJ = "BUILTIN"
 
@@ -149,6 +151,36 @@ class MonkeyHash
 
   def to_s
     "{" + @pairs.values.map { |pair| pair.to_s }.join(", ") + "}"
+  end
+end
+
+class MonkeyStruct
+  include MonkeyObject
+  attr_accessor :members
+
+  def initialize(members); @members = members end
+  def type; MonkeyStruct end
+  def to_s; "struct{" + @members.join(", ") + "}" end
+end
+
+class MonkeyInstance
+  include MonkeyObject
+  attr_accessor :struct, :values, :map
+
+  def initialize(struct, values)
+    @struct = struct
+    @values = values
+    @map = @struct.members.map { |m| m.value }.zip(@values).to_h
+  end
+
+  def type; MonkeyInstance end
+
+  def to_s
+    "{" +
+    @struct.members.zip(@values).map { |m, v|
+      m.to_s + "=" + v.to_s
+    }.join(",") +
+    "}"
   end
 end
 

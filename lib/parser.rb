@@ -5,14 +5,16 @@ require_relative "ast"
 class MonkeyLanguageParseError < StandardError; end
 
 module Precedence
-  LOWEST = 1
-  EQUALS = 123
-  LESSGREATER = 1234
-  SUM = 12345
-  PRODUCT = 123456 # *, /
-  PREFIX = 1234567 # -XXX, !XXX
-  CALL = 123456789
-  INDEX = 1234567890
+  LOWEST,
+  EQUALS,
+  LESSGREATER,
+  SUM,
+  PRODUCT,
+  PREFIX,
+  ACCESS,
+  INITIALIZE,
+  CALL,
+  INDEX = (1..25).to_a # 25 は適当
 end
 
 class Parser
@@ -36,6 +38,7 @@ class Parser
       TokenType::LBRACE,
       TokenType::LBRACKET,
       TokenType::FUNCTION,
+      TokenType::STRUCT,
     ].zip([
       :parse_identifier_expression,
       :parse_integer_literal_expression,
@@ -49,6 +52,7 @@ class Parser
       :parse_hash_literal,
       :parse_array_literal,
       :parse_function_literal,
+      :parse_struct_literal,
     ].map { |name| method(name) }).to_h
     @infix_parse_functions = ([
       TokenType::EQUAL,
@@ -64,6 +68,8 @@ class Parser
     ]) + [
       [TokenType::LPAR, method(:parse_call_expression)],
       [TokenType::LBRACKET, method(:parse_index_expression)],
+      [TokenType::LBRACE, method(:parse_initialize_expression)],
+      [TokenType::DOT, method(:parse_member_access_expression)],
     ]).to_h
     @precedences = [
       TokenType::EQUAL,
@@ -74,6 +80,8 @@ class Parser
       TokenType::MINUS,
       TokenType::ASTERISK,
       TokenType::SLASH,
+      TokenType::DOT,
+      TokenType::LBRACE,
       TokenType::LPAR,
       TokenType::LBRACKET,
     ].zip([
@@ -85,6 +93,8 @@ class Parser
       Precedence::SUM,
       Precedence::PRODUCT,
       Precedence::PRODUCT,
+      Precedence::ACCESS,
+      Precedence::INITIALIZE,
       Precedence::CALL,
       Precedence::INDEX,
     ]).to_h
@@ -230,7 +240,9 @@ class Parser
   def parse_if_expression
     ie = IfExpression.new
     expect_next_token_type_is(TokenType::LPAR)
-    ie.condition = parse_expression(Precedence::LOWEST)
+    ie.condition = parse_expression(
+      @precedences[TokenType::LBRACE], # # { より先を parse しないように
+    )
     expect_current_token_type_is(TokenType::RPAR)
     expect_next_token_type_is(TokenType::LBRACE)
     ie.consequence = parse_block_statement
@@ -301,7 +313,7 @@ class Parser
   def parse_expression_list(begin_token, end_token)
     exp_list = []
     expect_current_token_type_is(begin_token)
-    advance_cursor # ( or [
+    advance_cursor # ( or [ or {
     if current_token_type_is(end_token)
       return exp_list
     end
@@ -349,5 +361,28 @@ class Parser
     advance_cursor # :
     v = parse_expression(Precedence::LOWEST)
     return k, v
+  end
+
+  def parse_struct_literal
+    st = StructLiteral.new(@cur_token, [])
+    self.advance_cursor # struct
+    st.members = parse_expression_list(TokenType::LBRACE, TokenType::RBRACE)
+    return st
+  end
+
+  def parse_initialize_expression(left)
+    InitializeExpression.new(
+      @cur_token,
+      left,
+      parse_expression_list(TokenType::LBRACE, TokenType::RBRACE)
+    )
+  end
+
+  def parse_member_access_expression(left)
+    exp = MemberAccessExpression.new(@cur_token, left, @cur_token.literal)
+    precedence = current_token_precedence
+    advance_cursor # .
+    exp.member = parse_expression(precedence)
+    return exp
   end
 end

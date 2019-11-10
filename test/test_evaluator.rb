@@ -223,6 +223,38 @@ class TestEvaluator < Minitest::Test
     end
   end
 
+  def test_struct_literal
+    input = 'struct{"foo1", "fo" + "o2"}'
+    wants = ["foo1", "foo2"]
+    evaluated = _eval(input)
+    wants.each_with_index do |want, i|
+      _test_string_object(want, evaluated.members[i])
+    end
+  end
+
+  def test_initialize_expression
+    input = 'let S=struct{"foo1","foo2","foo3"}; S{1,2}'
+    wants = [1, 2, nil]
+    evaluated = _eval(input)
+    wants.each_with_index do |want, i|
+      if want
+        _test_integer_object(want, evaluated.values[i])
+      else
+        _test_null_object(evaluated.values[i])
+      end
+    end
+  end
+
+  def test_member_access_expressions
+    tests = [
+      ['struct{"foo1","foo2"}{1,2}.foo1', 1],
+    ]
+    tests.each do |input, want|
+      evaluated = _eval(input)
+      _test_integer_object(want, evaluated)
+    end
+  end
+
   def test_error_handling
     tests = [
       ["foobar;", "identifier not found: foobar"],
@@ -235,6 +267,11 @@ class TestEvaluator < Minitest::Test
       ["let f = 1; f(2, 3);", "not a function: INTEGER"],
       ['len("a", "bc")', "wrong number of arguments: expected 1, given 2"],
       ["len(123)", "argument to `len` not supported, got INTEGER"],
+      ['struct{"foo", 123}', "struct member type must be STRING"],
+      ['struct{"foo", "123"}', "struct member name must begin [a-zA-Z]"],
+      ["[123,45]{6, 7}", "initialize operator not supported ARRAY"],
+      ['struct{"foo1", "foo2"}{1, 2, 3}', "wrong number of arguments: expected 2, given 3"],
+      ['struct{"foo1", "foo2"}{1, 2}.foo3', "not found foo3 in struct{foo1, foo2}"],
     ]
     tests.each do |input, want_message|
       err = assert_raises(MonkeyLanguageEvaluateError) do

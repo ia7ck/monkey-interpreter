@@ -249,3 +249,43 @@ class HashLiteral < Expression
     "}"
   end
 end
+
+class StructLiteral < Expression
+  attr_accessor :members
+
+  def initialize(token, members)
+    @token = token
+    @members = members
+  end
+
+  def token_literal; @token.literal end
+  def to_str; "struct{" + @members.join(", ") + "}" end
+end
+
+class InitializeExpression < Expression
+  attr_accessor :struct, :values
+
+  def initialize(token, struct, values)
+    @token = token # {
+    @struct = struct # identifier or struct_literal
+    @values = values
+  end
+
+  def token_literal; @token.litaral end
+
+  def to_str; @struct + "{" + @values.join(", ") + "}" end
+end
+
+class MemberAccessExpression < Expression
+  attr_accessor :instance, :operator, :member
+
+  def initialize(token, instance, operator)
+    @token = token
+    @instance = instance
+    @operator = operator  # .
+    @member = nil
+  end
+
+  def token_literal; @token.literal end
+  def to_str; "(" + @instance + @operator + @member + ")" end
+end

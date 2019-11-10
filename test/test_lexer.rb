@@ -14,6 +14,8 @@ class TestLexer < Minitest::Test
       "a bc"
       [1, true]
       {"key": "value"}
+      struct{"foo1", "foo2"}
+      foo.bar1
     EOS
     le = Lexer.new(input)
     tests = [
@@ -66,6 +68,15 @@ class TestLexer < Minitest::Test
       [TokenType::COLON, ":"],
       [TokenType::STRING, "value"],
       [TokenType::RBRACE, "}"],
+      [TokenType::STRUCT, "struct"],
+      [TokenType::LBRACE, "{"],
+      [TokenType::STRING, "foo1"],
+      [TokenType::COMMA, ","],
+      [TokenType::STRING, "foo2"],
+      [TokenType::RBRACE, "}"],
+      [TokenType::IDENT, "foo"],
+      [TokenType::DOT, "."],
+      [TokenType::IDENT, "bar1"],
       [TokenType::EOF, "EOF"],
     ]
     tests.each do |t, l|

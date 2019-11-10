@@ -101,6 +101,15 @@ module Evaluator
       index = evaluate(node.index, env)
       eval_index_expression(left, index)
     when HashLiteral; eval_hash_literal(node, env)
+    when StructLiteral; eval_struct_literal(node, env)
+    when InitializeExpression
+      struct = evaluate(node.struct, env)
+      values = eval_expressions(node.values, env)
+      eval_initialize_expression(struct, values)
+    when MemberAccessExpression
+      instance = evaluate(node.instance, env)
+      member = node.member.value # !?
+      eval_member_access_expression(instance, member)
     else nil
     end
   end
@@ -222,8 +231,8 @@ module Evaluator
     obj != NULL and obj != FALSE
   end
 
-  def eval_expressions(arguments, env)
-    arguments.map { |arg| evaluate(arg, env) }
+  def eval_expressions(exps, env)
+    exps.map { |exp| evaluate(exp, env) }
   end
 
   def apply_function(func, args)
@@ -303,5 +312,39 @@ module Evaluator
       return NULL
     end
     return v.value
+  end
+
+  def eval_struct_literal(node, env)
+    exps = eval_expressions(node.members, env)
+    if not exps.all? { |exp| exp.instance_of?(MonkeyString) }
+      raise(MonkeyLanguageEvaluateError, "struct member type must be STRING")
+    end
+    if not exps.all? { |exp| exp.value =~ /^[a-zA-Z]\w*/ }
+      raise(MonkeyLanguageEvaluateError, "struct member name must begin [a-zA-Z]")
+    end
+    return MonkeyStruct.new(exps)
+  end
+
+  def eval_initialize_expression(struct, values)
+    if not struct.instance_of?(MonkeyStruct)
+      raise(MonkeyLanguageEvaluateError, "initialize operator not supported #{struct.type}")
+    end
+    if struct.members.size < values.size
+      raise(
+        MonkeyLanguageEvaluateError,
+        "wrong number of arguments: expected #{struct.members.size}, given #{values.size}"
+      )
+    end
+    while values.size < struct.members.size
+      values.push(NULL)
+    end
+    return MonkeyInstance.new(struct, values)
+  end
+
+  def eval_member_access_expression(instance, member)
+    if not instance.map.include?(member)
+      raise(MonkeyLanguageEvaluateError, "not found #{member} in #{instance.struct}")
+    end
+    return instance.map[member]
   end
 end

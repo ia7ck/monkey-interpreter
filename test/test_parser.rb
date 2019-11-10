@@ -130,6 +130,16 @@ class TestParser < Minitest::Test
     _test_identifier("y", alt.statements[0].expression)
   end
 
+  def test_if_condition
+    input = 'if ({"k": v}["k"] < w) { 0 }'
+    stmt = _parse_single_statement_program(input)
+    exp = stmt.expression
+    cond = exp.condition
+    assert_instance_of(InfixExpression, cond)
+    assert_equal("({k:v}[k])", cond.left_expression.to_str)
+    _test_literal_expression("w", cond.right_expression)
+  end
+
   def test_parse_function_literal
     input = "fn(x, y) { x + y; };"
     stmt = _parse_single_statement_program(input)
@@ -270,6 +280,46 @@ class TestParser < Minitest::Test
     end
   end
 
+  def test_parse_struct_literal
+    input = 'struct{"foo1", "foo2"}'
+    wants = ["foo1", "foo2"]
+    stmt = _parse_single_statement_program(input)
+    exp = stmt.expression
+    assert_equal(wants.size, exp.members.size)
+    wants.zip(exp.members).each do |want, got|
+      _test_literal_expression(want, got)
+    end
+  end
+
+  def test_parse_empty_struct_literal
+    input = "struct{}"
+    stmt = _parse_single_statement_program(input)
+    exp = stmt.expression
+    assert_equal(0, exp.members.size)
+  end
+
+  def test_initialize_expression
+    input = 'Foo{abc, 123, "xyz"}'
+    wants = ["abc", 123, "xyz"]
+    stmt = _parse_single_statement_program(input)
+    exp = stmt.expression
+    _test_literal_expression("Foo", exp.struct)
+    vals = exp.values
+    assert_equal(3, vals.size)
+    wants.zip(vals).each do |want, got|
+      _test_literal_expression(want, got)
+    end
+  end
+
+  def test_member_access_expression
+    input = "foo.bar1"
+    stmt = _parse_single_statement_program(input)
+    exp = stmt.expression
+    _test_literal_expression("foo", exp.instance)
+    assert_equal(".", exp.operator)
+    _test_literal_expression("bar1", exp.member)
+  end
+
   def test_operator_precedence
     tests = [
       ["1 + 2 * x", "(1 + (2 * x))"],
@@ -285,6 +335,10 @@ class TestParser < Minitest::Test
       ["-g(1, 2) + 3", "((-g(1, 2)) + 3)"],
       ["h(12)[3]", "(h(12)[3])"],
       ["funcs[1](2, 3)", "(funcs[1])(2, 3)"],
+      ["foo.bar1.dat1", "((foo.bar1).dat1)"],
+      ["foo.bar1 * 2", "((foo.bar1) * 2)"],
+      ["a[12].foo3", "((a[12]).foo3)"],
+      ['{"k": v}["k"].foo1', "(({k:v}[k]).foo1)"],
     ]
     tests.each do |input, output|
       pa = Parser.new(input)
