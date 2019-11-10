@@ -53,7 +53,7 @@ class LetStatement < Statement
 
   # to_s で実装すると変数展開のときにいい感じにしてくれるらしい
   # to_str だと "let = " + @name + " = " + @value とかすればいい
-  def to_str; "let #{@name.to_str} = #{@value.to_str}" end
+  def to_str; "let " + @name + " = " + @value end
 end
 
 class ReturnStatement < Statement
@@ -65,7 +65,7 @@ class ReturnStatement < Statement
   end
 
   def token_literal; @token.literal end
-  def to_str; "return #{@return_value.to_str}" end
+  def to_str; "return " + @return_value end
 end
 
 class ExpressionStatement < Statement
@@ -142,9 +142,9 @@ class IfExpression < Expression
 
   def to_str
     if @alternative
-      "if (#{@condition.to_str}) #{@consequence.to_str} else #{@alternative.to_str}"
+      "if (" + @condition + ")" + @consequence + "else" + @alternative
     else
-      "if (#{@condition.to_str}) #{@consequence.to_str}"
+      "if (" + @condition + ")" + @consequence
     end
   end
 end
@@ -161,35 +161,35 @@ class FunctionLiteral < Expression
   def token_literal; @token.literal end
 
   def to_str
-    "#{@token.literal} (#{@parameters.join(", ")}) #{@body.to_str}"
+    @token.literal + "(" + @parameters.join(", ") + ")" + @body
   end
 end
 
 class PrefixExpression < Expression
-  attr_accessor :operator, :right_expression
+  attr_accessor :operator, :right
 
   def initialize(token, operator)
     @token = token
     @operator = operator
-    @right_expression = nil
+    @right = nil
   end
 
   def token_literal; @token.literal end
-  def to_str; "(#{@operator}#{@right_expression.to_str})" end
+  def to_str; "(" + @operator + @right + ")" end
 end
 
 class InfixExpression < Expression
-  attr_accessor :left_expression, :operator, :right_expression
+  attr_accessor :left, :operator, :right
 
-  def initialize(token, left_expression, operator)
+  def initialize(token, left, operator)
     @token = token
-    @left_expression = left_expression
+    @left = left
     @operator = operator
-    @right_expression = nil
+    @right = nil
   end
 
   def to_str
-    "(#{@left_expression.to_str} #{@operator} #{@right_expression.to_str})"
+    "(" + @left + " " + @operator + " " + @right + ")"
   end
 end
 
@@ -203,7 +203,7 @@ class CallExpression < Expression
   end
 
   def token_literal; @token.literal end
-  def to_str; "#{@function.to_str}(#{@arguments.join(", ")})" end
+  def to_str; @function.to_str + "(" + @arguments.join(", ") + ")" end
 end
 
 class ArrayLiteral < Expression
@@ -228,7 +228,7 @@ class IndexExpression < Expression
   end
 
   def token_literal; @token.literal end
-  def to_str; "(#{@left.to_str}[#{@index.to_str}])" end
+  def to_str; "(" + @left + "[" + @index + "])" end
 end
 
 class HashLiteral < Expression
@@ -244,7 +244,7 @@ class HashLiteral < Expression
   def to_str
     "{" +
       @pairs.map { |k, v|
-        k.to_str + ":" + v.to_str
+        k.to_str + ": " + v.to_str
       }.join(", ") +
     "}"
   end

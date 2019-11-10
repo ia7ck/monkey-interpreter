@@ -148,8 +148,7 @@ class Parser
   def parse_block_statement
     advance_cursor # {
     block_stmt = BlockStatement.new
-    while (not current_token_type_is(TokenType::EOF)) and
-          (not current_token_type_is(TokenType::RBRACE))
+    while not current_token_type_is(TokenType::RBRACE)
       stmt = parse_statement
       raise if stmt.nil?
       block_stmt.statements.push(stmt)
@@ -167,26 +166,26 @@ class Parser
   end
 
   def parse_let_statement
-    let_stmt = LetStatement.new
+    stmt = LetStatement.new
     expect_next_token_type_is(TokenType::IDENT)
-    let_stmt.name = Identifier.new(@cur_token, @cur_token.literal)
+    stmt.name = Identifier.new(@cur_token, @cur_token.literal)
     expect_next_token_type_is(TokenType::ASSIGN)
     advance_cursor
-    let_stmt.value = parse_expression(Precedence::LOWEST)
+    stmt.value = parse_expression(Precedence::LOWEST)
     if next_token_type_is(TokenType::SEMICOLON)
       advance_cursor
     end
-    return let_stmt
+    return stmt
   end
 
   def parse_return_statement
-    ret_stmt = ReturnStatement.new
+    stmt = ReturnStatement.new
     advance_cursor # return
-    ret_stmt.return_value = parse_expression(Precedence::LOWEST)
+    stmt.return_value = parse_expression(Precedence::LOWEST)
     if next_token_type_is(TokenType::SEMICOLON)
       advance_cursor
     end
-    return ret_stmt
+    return stmt
   end
 
   def parse_expression_statement
@@ -212,9 +211,7 @@ class Parser
     while (not next_token_type_is(TokenType::SEMICOLON)) and
           precedence < next_token_precedence
       infix = @infix_parse_functions[@nxt_token.type]
-      if infix.nil?
-        return left_expression
-      end
+      raise if infix.nil?
       advance_cursor
       left_expression = infix.call(left_expression)
     end
@@ -258,7 +255,7 @@ class Parser
   def parse_prefix_expression
     expression = PrefixExpression.new(@cur_token, @cur_token.literal)
     advance_cursor
-    expression.right_expression = parse_expression(Precedence::PREFIX)
+    expression.right = parse_expression(Precedence::PREFIX)
     return expression
   end
 
@@ -294,12 +291,12 @@ class Parser
     return identifiers
   end
 
-  def parse_infix_expression(left_expression)
-    expression = InfixExpression.new(@cur_token, left_expression, @cur_token.literal)
+  def parse_infix_expression(left)
+    exp = InfixExpression.new(@cur_token, left, @cur_token.literal)
     precedence = current_token_precedence
     advance_cursor
-    expression.right_expression = parse_expression(precedence)
-    return expression
+    exp.right = parse_expression(precedence)
+    return exp
   end
 
   def parse_call_expression(function)

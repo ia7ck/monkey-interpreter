@@ -77,11 +77,11 @@ module Evaluator
       MonkeyReturnValue.new(value)
     when BlockStatement; eval_block_statement(node, env)
     when PrefixExpression
-      right_obj = evaluate(node.right_expression, env)
+      right_obj = evaluate(node.right, env)
       eval_prefix_expression(node.operator, right_obj)
     when InfixExpression
-      left_obj = evaluate(node.left_expression, env)
-      right_obj = evaluate(node.right_expression, env)
+      left_obj = evaluate(node.left, env)
+      right_obj = evaluate(node.right, env)
       eval_infix_expression(node.operator, left_obj, right_obj)
     when Identifier; eval_identifier(node.value, env)
     when IntegerLiteral; MonkeyInteger.new(node.value)

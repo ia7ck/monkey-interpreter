@@ -136,8 +136,8 @@ class TestParser < Minitest::Test
     exp = stmt.expression
     cond = exp.condition
     assert_instance_of(InfixExpression, cond)
-    assert_equal("({k:v}[k])", cond.left_expression.to_str)
-    _test_literal_expression("w", cond.right_expression)
+    assert_equal("({k: v}[k])", cond.left.to_str)
+    _test_literal_expression("w", cond.right)
   end
 
   def test_parse_function_literal
@@ -180,7 +180,7 @@ class TestParser < Minitest::Test
       exp = stmt.expression
       assert(exp)
       assert_equal(operator, exp.operator)
-      _test_literal_expression(integer_value, exp.right_expression)
+      _test_literal_expression(integer_value, exp.right)
     end
   end
 
@@ -201,9 +201,9 @@ class TestParser < Minitest::Test
 
   def _test_infix_expression(left, operator, right, exp)
     assert_equal(InfixExpression, exp.class)
-    _test_literal_expression(left, exp.left_expression)
+    _test_literal_expression(left, exp.left)
     assert_equal(operator, exp.operator)
-    _test_literal_expression(right, exp.right_expression)
+    _test_literal_expression(right, exp.right)
   end
 
   def test_parse_call_expression
@@ -338,7 +338,7 @@ class TestParser < Minitest::Test
       ["foo.bar1.dat1", "((foo.bar1).dat1)"],
       ["foo.bar1 * 2", "((foo.bar1) * 2)"],
       ["a[12].foo3", "((a[12]).foo3)"],
-      ['{"k": v}["k"].foo1', "(({k:v}[k]).foo1)"],
+      ['{"k": v}["k"].foo1', "(({k: v}[k]).foo1)"],
     ]
     tests.each do |input, output|
       pa = Parser.new(input)
