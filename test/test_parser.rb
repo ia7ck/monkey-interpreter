@@ -339,6 +339,7 @@ class TestParser < Minitest::Test
       ["foo.bar1 * 2", "((foo.bar1) * 2)"],
       ["a[12].foo3", "((a[12]).foo3)"],
       ['{"k": v}["k"].foo1', "(({k: v}[k]).foo1)"],
+      ["foo.bar1[2]", "((foo.bar1)[2])"],
     ]
     tests.each do |input, output|
       pa = Parser.new(input)

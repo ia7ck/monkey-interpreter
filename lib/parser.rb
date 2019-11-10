@@ -14,7 +14,7 @@ module Precedence
   ACCESS,
   INITIALIZE,
   CALL,
-  INDEX = (1..25).to_a # 25 は適当
+  INDEX = [1, 2, 3, 4, 5, 6, 7, 7, 7, 7]
 end
 
 class Parser
