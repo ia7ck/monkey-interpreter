@@ -110,7 +110,7 @@ class MonkeyFunction
   def to_s
     <<~EOS
       fn(#{parameters.join(", ")}) {
-        #{@body}
+        #{@body.to_str}
       }
     EOS
   end
