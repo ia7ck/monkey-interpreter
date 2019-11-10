@@ -117,3 +117,13 @@ Each of
 - Bool
 
 object can be used as hash key.
+
+### Struct
+```sh
+> let T = struct{"first", "second", "third"}
+> let t = T{1, [2, 3]}
+> t.second[0]
+2
+> t.third
+null
+```
