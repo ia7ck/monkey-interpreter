@@ -146,8 +146,8 @@ class Parser
   end
 
   def parse_block_statement
+    block_stmt = BlockStatement.new(@cur_token, [])
     advance_cursor # {
-    block_stmt = BlockStatement.new
     while not current_token_type_is(TokenType::RBRACE)
       stmt = parse_statement
       raise if stmt.nil?
@@ -158,42 +158,38 @@ class Parser
   end
 
   def parse_statement
-    case @cur_token.type
-    when TokenType::LET; parse_let_statement
-    when TokenType::RETURN; parse_return_statement
-    else parse_expression_statement
-    end
-  end
-
-  def parse_let_statement
-    stmt = LetStatement.new
-    expect_next_token_type_is(TokenType::IDENT)
-    stmt.name = Identifier.new(@cur_token, @cur_token.literal)
-    expect_next_token_type_is(TokenType::ASSIGN)
-    advance_cursor
-    stmt.value = parse_expression(Precedence::LOWEST)
+    stmt =
+      case @cur_token.type
+      when TokenType::LET; parse_let_statement
+      when TokenType::RETURN; parse_return_statement
+      else parse_expression_statement
+      end
     if next_token_type_is(TokenType::SEMICOLON)
       advance_cursor
     end
     return stmt
   end
 
+  def parse_let_statement
+    stmt = LetStatement.new(@cur_token)
+    expect_next_token_type_is(TokenType::IDENT)
+    stmt.name = Identifier.new(@cur_token, @cur_token.literal)
+    expect_next_token_type_is(TokenType::ASSIGN)
+    advance_cursor
+    stmt.value = parse_expression(Precedence::LOWEST)
+    return stmt
+  end
+
   def parse_return_statement
-    stmt = ReturnStatement.new
+    stmt = ReturnStatement.new(@cur_token)
     advance_cursor # return
     stmt.return_value = parse_expression(Precedence::LOWEST)
-    if next_token_type_is(TokenType::SEMICOLON)
-      advance_cursor
-    end
     return stmt
   end
 
   def parse_expression_statement
     stmt = ExpressionStatement.new(@cur_token)
     stmt.expression = parse_expression(Precedence::LOWEST)
-    if next_token_type_is(TokenType::SEMICOLON)
-      advance_cursor
-    end
     return stmt
   end
 
@@ -204,18 +200,18 @@ class Parser
       raise(
         MonkeyLanguageParseError,
         ["unexpected token: #{@cur_token.type}",
-         "not found prefix parse function for #{@cur_token.type}"].join("\n")
+         "not found prefix parse function for #{@cur_token.type}"].join(", ")
       )
     end
-    left_expression = prefix.call
+    left_exp = prefix.call
     while (not next_token_type_is(TokenType::SEMICOLON)) and
           precedence < next_token_precedence
       infix = @infix_parse_functions[@nxt_token.type]
       raise if infix.nil?
       advance_cursor
-      left_expression = infix.call(left_expression)
+      left_exp = infix.call(left_exp)
     end
-    return left_expression
+    return left_exp
   end
 
   def parse_identifier_expression
@@ -235,10 +231,10 @@ class Parser
   end
 
   def parse_if_expression
-    ie = IfExpression.new
+    ie = IfExpression.new(@cur_token)
     expect_next_token_type_is(TokenType::LPAR)
     ie.condition = parse_expression(
-      @precedences[TokenType::LBRACE], # # { より先を parse しないように
+      @precedences[TokenType::LBRACE], # { より先を parse しないように
     )
     expect_current_token_type_is(TokenType::RPAR)
     expect_next_token_type_is(TokenType::LBRACE)
@@ -253,10 +249,10 @@ class Parser
   end
 
   def parse_prefix_expression
-    expression = PrefixExpression.new(@cur_token, @cur_token.literal)
+    exp = PrefixExpression.new(@cur_token, @cur_token.literal)
     advance_cursor
-    expression.right = parse_expression(Precedence::PREFIX)
-    return expression
+    exp.right = parse_expression(Precedence::PREFIX)
+    return exp
   end
 
   def parse_grouped_expression # (...)
@@ -267,7 +263,7 @@ class Parser
   end
 
   def parse_function_literal # fn(a, b, ...) { ... }
-    fl = FunctionLiteral.new
+    fl = FunctionLiteral.new(@cur_token)
     expect_next_token_type_is(TokenType::LPAR)
     fl.parameters = parse_function_parameters
     expect_current_token_type_is(TokenType::RPAR)
@@ -278,17 +274,17 @@ class Parser
   end
 
   def parse_function_parameters # (a, b, ...) { ... }
-    identifiers = []
+    idents = []
     advance_cursor # (
     while not current_token_type_is(TokenType::RPAR)
       if current_token_type_is(TokenType::IDENT)
-        identifiers.push(Identifier.new(@cur_token, @cur_token.literal))
+        idents.push(Identifier.new(@cur_token, @cur_token.literal))
       else
         expect_current_token_type_is(TokenType::COMMA)
       end
       advance_cursor
     end
-    return identifiers
+    return idents
   end
 
   def parse_infix_expression(left)

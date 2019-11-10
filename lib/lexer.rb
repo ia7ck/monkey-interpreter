@@ -93,33 +93,25 @@ class Lexer
   end
 
   def skip_whitespace
-    while @char.whitespace?
-      read_char
-    end
+    while @char.whitespace?; read_char end
   end
 
   def read_identifier
     left = @pos
-    while @char.letter?
-      read_char
-    end
+    while @char.letter?; read_char end
     return @input[left...@pos] # [left, @pos)
   end
 
   def read_integer
     left = @pos
-    while @char.digit?
-      read_char
-    end
+    while @char.digit?; read_char end
     return @input[left...@pos] # [left, @pos)
   end
 
   def read_string
     read_char # "
     left = @pos
-    while @char != '"' and @char != "$"
-      read_char
-    end
+    while not ['"', "$"].include?(@char); read_char end
     return @input[left...@pos]
   end
 end

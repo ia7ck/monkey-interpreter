@@ -61,7 +61,6 @@ end
 
 class Token
   include TokenType
-
   attr_accessor :type, :literal
 
   def initialize(type, literal)

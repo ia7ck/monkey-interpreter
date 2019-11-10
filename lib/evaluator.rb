@@ -18,10 +18,8 @@ module Evaluator
       end
       a = args[0]
       case a
-      when MonkeyString
-        MonkeyInteger.new(a.value.size)
-      when MonkeyArray
-        MonkeyInteger.new(a.elements.size)
+      when MonkeyString; MonkeyInteger.new(a.value.size)
+      when MonkeyArray; MonkeyInteger.new(a.elements.size)
       else
         raise(MonkeyLanguageEvaluateError, "argument to `len` not supported, got #{a.type}")
       end
@@ -117,25 +115,25 @@ module Evaluator
   def native_bool_to_boolean_object(b); b ? TRUE : FALSE end
 
   def eval_program(program, env)
-    result = nil
+    res = nil
     program.statements.each do |statement|
-      result = evaluate(statement, env)
-      if result.instance_of?(MonkeyReturnValue)
-        return result.value
+      res = evaluate(statement, env)
+      if res.instance_of?(MonkeyReturnValue)
+        return res.value
       end
     end
-    return result
+    return res
   end
 
   def eval_block_statement(block, env)
-    result = nil
+    res = nil
     block.statements.each do |statement|
-      result = evaluate(statement, env)
-      if result and result.type == MonkeyObject::RETURN_VALUE_OBJ
-        return result
+      res = evaluate(statement, env)
+      if res and res.type == MonkeyObject::RETURN_VALUE_OBJ
+        return res
       end
     end
-    return result
+    return res
   end
 
   def eval_prefix_expression(operator, right_obj)
@@ -158,62 +156,58 @@ module Evaluator
     (obj == NULL or obj == FALSE) ? TRUE : FALSE
   end
 
-  def eval_infix_expression(operator, left_obj, right_obj)
-    case [left_obj, right_obj].map { |o| o.class }
+  def eval_infix_expression(op, left, right)
+    case [left, right].map { |o| o.class }
     when [MonkeyInteger, MonkeyInteger]
-      eval_integer_infix_expression(operator, left_obj, right_obj)
+      eval_integer_infix_expression(op, left, right)
     when [MonkeyBoolean, MonkeyBoolean]
-      eval_boolean_infix_expression(operator, left_obj, right_obj)
+      eval_boolean_infix_expression(op, left, right)
     when [MonkeyString, MonkeyString]
-      eval_string_infix_expression(operator, left_obj, right_obj)
+      eval_string_infix_expression(op, left, right)
     else
-      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
+      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left.type} #{op} #{right.type}")
     end
   end
 
-  def eval_integer_infix_expression(operator, left_obj, right_obj)
-    left_value, right_value = left_obj.value, right_obj.value
-    case operator
-    when "+"; MonkeyInteger.new(left_value + right_value)
-    when "-"; MonkeyInteger.new(left_value - right_value)
-    when "*"; MonkeyInteger.new(left_value * right_value)
-    when "/"; MonkeyInteger.new(left_value / right_value)
-    when "=="; native_bool_to_boolean_object(left_value == right_value)
-    when "!="; native_bool_to_boolean_object(left_value != right_value)
-    when "<"; native_bool_to_boolean_object(left_value < right_value)
-    when ">"; native_bool_to_boolean_object(left_value > right_value)
+  def eval_integer_infix_expression(op, left, right)
+    l_val, r_val = left.value, right.value
+    case op
+    when "+"; MonkeyInteger.new(l_val + r_val)
+    when "-"; MonkeyInteger.new(l_val - r_val)
+    when "*"; MonkeyInteger.new(l_val * r_val)
+    when "/"; MonkeyInteger.new(l_val / r_val)
+    when "=="; native_bool_to_boolean_object(l_val == r_val)
+    when "!="; native_bool_to_boolean_object(l_val != r_val)
+    when "<"; native_bool_to_boolean_object(l_val < r_val)
+    when ">"; native_bool_to_boolean_object(l_val > r_val)
     else
-      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
+      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left.type} #{op} #{right.type}")
     end
   end
 
-  def eval_boolean_infix_expression(operator, left_obj, right_obj)
-    case operator
-    when "=="; native_bool_to_boolean_object(left_obj == right_obj)
-    when "!="; native_bool_to_boolean_object(left_obj != right_obj)
+  def eval_boolean_infix_expression(op, left, right)
+    case op
+    when "=="; native_bool_to_boolean_object(left == right)
+    when "!="; native_bool_to_boolean_object(left != right)
     else
-      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
+      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left.type} #{op} #{right.type}")
     end
   end
 
-  def eval_string_infix_expression(operator, left_obj, right_obj)
-    left_value, right_value = left_obj.value, right_obj.value
-    case operator
-    when "+"; MonkeyString.new(left_value + right_value)
+  def eval_string_infix_expression(op, left, right)
+    l_val, r_val = left.value, right.value
+    case op
+    when "+"; MonkeyString.new(l_val + r_val)
     else
-      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left_obj.type} #{operator} #{right_obj.type}")
+      raise(MonkeyLanguageEvaluateError, "unknown operator: #{left.type} #{op} #{right.type}")
     end
   end
 
   def eval_identifier(name, env)
-    value = env.get(name)
-    if value
-      return value
-    end
-    value = Builtin[name]
-    if value
-      return value
-    end
+    val = env.get(name)
+    return val if val
+    val = Builtin[name]
+    return val if val
     raise(MonkeyLanguageEvaluateError, "identifier not found: #{name}")
   end
 
@@ -254,9 +248,9 @@ module Evaluator
     end
   end
 
-  def extend_function_env(function, arguments)
-    env = Environment.new(outer: function.env)
-    function.parameters.zip(arguments).each do |param, arg|
+  def extend_function_env(func, args)
+    env = Environment.new(outer: func.env)
+    func.parameters.zip(args).each do |param, arg|
       env.set(param.value, arg)
     end
     return env
@@ -325,20 +319,20 @@ module Evaluator
     return MonkeyStruct.new(exps)
   end
 
-  def eval_initialize_expression(struct, values)
+  def eval_initialize_expression(struct, vals)
     if not struct.instance_of?(MonkeyStruct)
       raise(MonkeyLanguageEvaluateError, "initialize operator not supported #{struct.type}")
     end
-    if struct.members.size < values.size
+    if struct.members.size < vals.size
       raise(
         MonkeyLanguageEvaluateError,
-        "wrong number of arguments: expected #{struct.members.size}, given #{values.size}"
+        "wrong number of arguments: expected #{struct.members.size}, given #{vals.size}"
       )
     end
-    while values.size < struct.members.size
-      values.push(NULL)
+    while vals.size < struct.members.size
+      vals.push(NULL)
     end
-    return MonkeyInstance.new(struct, values)
+    return MonkeyInstance.new(struct, vals)
   end
 
   def eval_member_access_expression(instance, member)

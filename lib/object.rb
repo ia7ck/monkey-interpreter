@@ -30,12 +30,12 @@ class MonkeyInteger
   include MonkeyObject, MonkeyHashable
   attr_accessor :value
 
-  def initialize(value)
-    @value = value
-  end
-
+  def initialize(value); @value = value end
   def hash; @value.hash end
   def hash_key; hash end
+
+  # https://docs.ruby-lang.org/ja/latest/method/Object/i/hash.html
+  # a.eql?(b) ならば a.hash == b.hash
 
   def eql?(other)
     other.instance_of?(MonkeyInteger) and @value == other.value
@@ -49,10 +49,7 @@ class MonkeyBoolean
   include MonkeyObject, MonkeyHashable
   attr_accessor :value
 
-  def initialize(value)
-    @value = value
-  end
-
+  def initialize(value); @value = value end
   def hash; @value.hash end
   def hash_key; hash end
 
@@ -68,9 +65,7 @@ class MonkeyString
   include MonkeyObject, MonkeyHashable
   attr_accessor :value
 
-  def initialize(value)
-    @value = value
-  end
+  def initialize(value); @value = value end
 
   def hash; @value.hash end
   def hash_key; hash end
@@ -87,9 +82,7 @@ class MonkeyReturnValue
   include MonkeyObject
   attr_accessor :value
 
-  def initialize(value)
-    @value = value
-  end
+  def initialize(value); @value = value end
 
   def type; RETURN_VALUE_OBJ end
   def to_s; @value.to_s end
@@ -99,8 +92,8 @@ class MonkeyFunction
   include MonkeyObject
   attr_accessor :parameters, :body, :env
 
-  def initialize(parameters, body, env)
-    @parameters = parameters
+  def initialize(params, body, env)
+    @parameters = params
     @body = body
     @env = env
   end
@@ -120,10 +113,7 @@ class MonkeyArray
   include MonkeyObject
   attr_accessor :elements
 
-  def initialize(elems)
-    @elements = elems
-  end
-
+  def initialize(elems); @elements = elems end
   def type; ARRAY_OBJ end
   def to_s; "[#{@elements.join(", ")}]" end
 end
@@ -143,10 +133,7 @@ class MonkeyHash
   include MonkeyObject
   attr_accessor :pairs
 
-  def initialize(pairs)
-    @pairs = pairs
-  end
-
+  def initialize(pairs); @pairs = pairs end
   def type; HASH_OBJ end
 
   def to_s
@@ -195,10 +182,7 @@ class MonkeyBuiltin
   include MonkeyObject
   attr_accessor :func
 
-  def initialize(func)
-    @func = func
-  end
-
+  def initialize(func); @func = func end
   def type; BUILTIN_OBJ end
   def to_s; "builtin function" end
 end

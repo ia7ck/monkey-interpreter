@@ -12,59 +12,54 @@ end
 
 class Statement
   include Node
+
+  def token_literal; @token.literal end
 end
 
 class Expression
   include Node
+
+  def token_literal; @token.literal end
 end
 
 class Program
   attr_accessor :statements
 
-  def initialize
-    @statements = []
-  end
-
+  def initialize; @statements = [] end
   def to_str; @statements.join(" ") end
 end
 
 class BlockStatement < Statement
   attr_accessor :statements
 
-  def initialize
-    @token = Token.new(TokenType::LBRACE, "{")
-    @statements = []
+  def initialize(token, stmts)
+    @token = token
+    @statements = stmts
   end
 
-  def token_literal; @token.literal end
   def to_str; @statements.join(" ") end
 end
 
 class LetStatement < Statement
   attr_accessor :name, :value
 
-  def initialize
-    @token = Token.new(TokenType::LET, "let")
+  def initialize(token)
+    @token = token
     @name = nil
     @value = nil
   end
 
-  def token_literal; @token.literal end
-
-  # to_s で実装すると変数展開のときにいい感じにしてくれるらしい
-  # to_str だと "let = " + @name + " = " + @value とかすればいい
   def to_str; "let " + @name + " = " + @value end
 end
 
 class ReturnStatement < Statement
   attr_accessor :return_value
 
-  def initialize
-    @token = Token.new(TokenType::RETURN, "return")
+  def initialize(token)
+    @token = token
     @return_value = nil
   end
 
-  def token_literal; @token.literal end
   def to_str; "return " + @return_value end
 end
 
@@ -76,69 +71,62 @@ class ExpressionStatement < Statement
     @expression = nil
   end
 
-  def token_literal; @token.literal end
   def to_str; @expression.to_str end
 end
 
 class Identifier < Expression
-  attr_accessor :token, :value
+  attr_accessor :value
 
   def initialize(token, value)
     @token = token
     @value = value
   end
 
-  def token_literal; @token.literal end
   def to_str; @token.literal end
 end
 
 class IntegerLiteral < Expression
-  attr_accessor :token, :value
+  attr_accessor :value
 
   def initialize(token, value)
     @token = token
     @value = value
   end
 
-  def token_literal; @token.literal end
   def to_str; @token.literal end
 end
 
 class BooleanLiteral < Expression
-  attr_accessor :token, :value
+  attr_accessor :value
 
   def initialize(token, value)
     @token = token
     @value = value
   end
 
-  def token_literal; @token.literal end
   def to_str; @token.literal end
 end
 
 class StringLiteral < Expression
-  attr_accessor :token, :value
+  attr_accessor :value
 
   def initialize(token, value)
     @token = token
     @value = value
   end
 
-  def token_literal; @token.literal end
   def to_str; @token.literal end
 end
 
 class IfExpression < Expression
   attr_accessor :condition, :consequence, :alternative
 
-  def initialize
-    @token = Token.new(TokenType::IF, "if")
+  def initialize(token)
+    @token = token
     @condition = nil
     @consequence = nil
     @alternative = nil
   end
-
-  def token_literal; @token.literal end
 
   def to_str
     if @alternative
@@ -146,22 +134,6 @@ class IfExpression < Expression
     else
       "if (" + @condition + ")" + @consequence
     end
-  end
-end
-
-class FunctionLiteral < Expression
-  attr_accessor :parameters, :body
-
-  def initialize
-    @token = Token.new(TokenType::FUNCTION, "fn")
-    @parameters = []
-    @body = nil
-  end
-
-  def token_literal; @token.literal end
-
-  def to_str
-    @token.literal + "(" + @parameters.join(", ") + ")" + @body
   end
 end
 
@@ -174,17 +146,30 @@ class PrefixExpression < Expression
     @right = nil
   end
 
-  def token_literal; @token.literal end
   def to_str; "(" + @operator + @right + ")" end
+end
+
+class FunctionLiteral < Expression
+  attr_accessor :parameters, :body
+
+  def initialize(token)
+    @token = token
+    @parameters = []
+    @body = nil
+  end
+
+  def to_str
+    @token.literal + "(" + @parameters.join(", ") + ")" + @body
+  end
 end
 
 class InfixExpression < Expression
   attr_accessor :left, :operator, :right
 
-  def initialize(token, left, operator)
+  def initialize(token, left, op)
     @token = token
     @left = left
-    @operator = operator
+    @operator = op
     @right = nil
   end
 
@@ -196,30 +181,28 @@ end
 class CallExpression < Expression
   attr_accessor :function, :arguments
 
-  def initialize(function, arguments)
+  def initialize(func, args)
     @token = Token.new(TokenType::LPAR, "(")
-    @function = function # identifier or function_literal
-    @arguments = arguments
+    @function = func # identifier or function_literal
+    @arguments = args
   end
 
-  def token_literal; @token.literal end
   def to_str; @function.to_str + "(" + @arguments.join(", ") + ")" end
 end
 
 class ArrayLiteral < Expression
-  attr_accessor :token, :elements
+  attr_accessor :elements
 
   def initialize(token, elems)
     @token = token
     @elements = elems
   end
 
-  def token_literal; @token.literal end
   def to_str; "[#{@elements.join(", ")}]" end
 end
 
 class IndexExpression < Expression
-  attr_accessor :token, :left, :index
+  attr_accessor :left, :index
 
   def initialize(token, left)
     @token = token # [
@@ -227,19 +210,16 @@ class IndexExpression < Expression
     @index = nil
   end
 
-  def token_literal; @token.literal end
   def to_str; "(" + @left + "[" + @index + "])" end
 end
 
 class HashLiteral < Expression
-  attr_accessor :token, :pairs
+  attr_accessor :pairs
 
   def initialize(token, pairs)
     @token = token
     @pairs = pairs
   end
-
-  def token_literal; @token.literal end
 
   def to_str
     "{" +
@@ -258,7 +238,6 @@ class StructLiteral < Expression
     @members = members
   end
 
-  def token_literal; @token.literal end
   def to_str; "struct{" + @members.join(", ") + "}" end
 end
 
@@ -271,21 +250,18 @@ class InitializeExpression < Expression
     @values = values
   end
 
-  def token_literal; @token.litaral end
-
   def to_str; @struct + "{" + @values.join(", ") + "}" end
 end
 
 class MemberAccessExpression < Expression
   attr_accessor :instance, :operator, :member
 
-  def initialize(token, instance, operator)
+  def initialize(token, instance, op)
     @token = token
     @instance = instance
-    @operator = operator  # .
+    @operator = op  # .
     @member = nil
   end
 
-  def token_literal; @token.literal end
   def to_str; "(" + @instance + @operator + @member + ")" end
 end
